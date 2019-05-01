@@ -1,0 +1,37 @@
+# This is a template for the environment variables that have
+# to be set for successfully running DCOS cluster automation
+# Complete the required fields "<>" for your target environment
+# Finally, source this file before running terraform plan/apply/destroy
+
+unset OS_DOMAIN_NAME
+export OS_IDENTITY_API_VERSION=3
+export OS_AUTH_VERSION=3
+export OS_COMPUTE_API_VERSION=2
+export OS_REGION_NAME=region1
+
+export OS_USER_DOMAIN_NAME=hpe
+export OS_PROJECT_DOMAIN_NAME=Default
+export OS_AUTH_URL=https://<your openstack instance here>:5000/v3
+export OS_USERNAME=<your openstack username here>
+export OS_PROJECT_NAME=<your openstack project name here>
+
+export OS_PASSWORD=<optional: your openstack password>
+
+# Get Password
+if [[ "$OS_PASSWORD" == "" ]]; then
+  echo -n "Enter Password for [$OS_USERNAME]:"
+  read -s OS_PASSWORD
+  export OS_PASSWORD=$OS_PASSWORD
+  echo -en "\n"
+fi
+
+# This section is for adding private CA certs to your nodes
+echo "-----BEGIN CERTIFICATE-----
+<put your cacerts here>
+-----END CERTIFICATE-----
+-----BEGIN CERTIFICATE-----
+<you can addmore than one if needed>
+-----END CERTIFICATE-----
+" > ~/HP_Ent_Private_SSL_CA.cer
+
+export OS_CACERT=~/HP_Ent_Private_SSL_CA.cer

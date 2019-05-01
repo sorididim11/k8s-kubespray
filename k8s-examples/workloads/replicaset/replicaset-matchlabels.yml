@@ -1,0 +1,20 @@
+apiVersion: apps/v1
+kind: ReplicaSet
+metadata:
+  name: kubia-rs
+spec:
+  selector:
+    matchLabels:
+      app: kubia-pod
+  replicas: 3 
+  
+  template:
+    metadata:
+      labels:
+        app: kubia-pod
+    spec:
+      containers:
+        - name: kubia-c
+          image: luksa/kubia
+          ports:
+            - containerPort: 8080

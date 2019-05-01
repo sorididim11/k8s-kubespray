@@ -1,0 +1,47 @@
+kind: Service
+apiVersion: v1
+metadata:
+ name: dw-oracle
+spec:
+ type: ClusterIP
+ ports:
+ - port: 1521
+
+---
+
+kind: Endpoints
+apiVersion: v1
+metadata:
+ name: dw-oracle
+subsets:
+ - addresses:
+     - ip: 210.116.50.210
+   ports:
+     - port: 1521
+
+---
+kind: Service
+apiVersion: v1
+metadata:
+ name: datalake
+spec:
+ type: ClusterIP
+ ports:
+ - name: hive
+   port: 10000
+ - name: impala
+   port: 21050
+
+---
+kind: Endpoints
+apiVersion: v1
+metadata:
+ name: datalake
+subsets:
+ - addresses:
+     - ip: 104.251.212.192
+   ports:
+     - name: hive
+       port: 10000
+     - name: impala
+       port: 21050

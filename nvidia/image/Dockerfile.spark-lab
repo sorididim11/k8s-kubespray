@@ -1,0 +1,101 @@
+FROM jupyter/all-spark-notebook
+
+ARG VERSION
+LABEL version=$VERSION device-type=cpu
+
+USER root
+
+ADD fix-permissions /usr/local/bin/fix-permissions
+
+# ==================================================================
+# Unixodbc & clouder hive/impla odbc 
+# ------------------------------------------------------------------
+RUN  apt-get update && apt-get install -y wget vim openjdk-8-jdk unixodbc unixodbc-dev alien libaio1 libaio-dev && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
+COPY cloudera/ /data/
+COPY oracle/ /data/
+COPY odbcinst.ini /etc/odbcinst.ini
+COPY odbc.ini /etc/odbc.ini
+
+
+
+RUN apt-get install -y -f /data/clouderahiveodbc_2.5.25.1020-2_amd64.deb && \
+    apt-get install -y -f /data/clouderaimpalaodbc_2.5.42.1031-2_amd64.deb && \
+    rm -rf /opt/cloudera/hiveodbc/lib/64/cloudera.hiveodbc.ini && \
+    rm -rf /opt/cloudera/hiveodbc/lib/64/cloudera.impalaodbc.ini && \
+    cp /data/cloudera.*.ini /etc/ && \
+    cp /data/HiveJDBC41.jar /data/ImpalaJDBC41.jar /usr/lib/jvm/java-8-openjdk-amd64/jre/lib/ext
+    
+
+
+# ==================================================================
+#  JDBC CLI client
+# ------------------------------------------------------------------
+COPY connector/datalake.properties /etc/datalake/datalake.properties
+COPY connector/JdbcClient.java /usr/local/bin/
+COPY connector/jdbc-cli /usr/local/bin
+ADD connector/dbi.py /opt/conda/lib/python3.6/site-packages/shcard/
+
+RUN javac /usr/local/bin/JdbcClient.java && \
+    chmod 755 /usr/local/bin/jdbc-cli && \
+    chmod 777 /etc/datalake/datalake.properties 
+
+
+
+# ==================================================================
+# Oracle sqlplus & odbc extension
+# ------------------------------------------------------------------
+
+RUN alien -i /data/oracle-instantclient12.2-basic-12.2.0.1.0-1.x86_64.rpm && \
+    alien -i /data/oracle-instantclient12.2-sqlplus-12.2.0.1.0-1.x86_64.rpm && \
+    alien -i /data/oracle-instantclient12.2-devel-12.2.0.1.0-1.x86_64.rpm && \
+    alien -i /data/oracle-instantclient12.2-odbc-12.2.0.1.0-2.x86_64.rpm && \
+    alien -i /data/oracle-instantclient12.2-jdbc-12.2.0.1.0-1.x86_64.rpm && \
+    cp /usr/lib/oracle/12.2/client64/lib/ojdbc8.jar /usr/lib/jvm/java-8-openjdk-amd64/jre/lib/ext
+
+ENV JAVA_HOME       /usr/lib/jvm/java-8-openjdk-amd64
+ENV ORACLE_HOME     /usr/lib/oracle/12.2/client64
+ENV PATH            $JAVA_HOME/bin:$ORACLE_HOME/bin:$PATH
+ENV LD_LIBRARY_PATH /usr/lib/x86_64-linux-gnu:$ORACLE_HOME/lib
+ENV LD_PRELOAD /usr/lib/x86_64-linux-gnu/libodbcinst.so
+
+
+USER $NB_UID
+
+RUN conda install --yes --quiet  \
+        thrift \
+        thrift_sasl \
+        && \
+    conda clean -tipsy
+
+RUN pip install --quiet --no-cache-dir \
+        thriftpy \
+        PyHive \
+        impala \
+        pyodbc
+
+
+USER root
+# Set up our notebook config.
+RUN  TINI_VERSION=`curl https://github.com/krallin/tini/releases/latest | grep -o "/v.*\"" | sed 's:^..\(.*\).$:\1:'` && \
+    curl -L "https://github.com/krallin/tini/releases/download/v${TINI_VERSION}/tini_${TINI_VERSION}.deb" > tini.deb && \
+    dpkg -i tini.deb && \
+    rm tini.deb && \
+    apt-get clean
+
+
+COPY  jupyter_notebook_config.py /etc/jupyter/
+COPY  notebooks/*spark-*.ipynb /home/$NB_USER/notebooks/samples/
+COPY  run_jupyter.sh /usr/local/bin/
+RUN rm -rf /home/$NB_USER/work && rm -rf /home/$NB_USER/.rpmdb && chown -R $NB_USER:$NB_UID /home/$NB_USER/notebooks && \
+    fix-permissions /etc/jupyter/ && fix-permissions /home/$NB_USER/notebooks/samples && \
+    fix-permissions $CONDA_DIR && \
+    fix-permissions /home/$NB_USER
+
+COPY entrypoint.sh /usr/local/bin/
+ENTRYPOINT [ "/usr/bin/tini", "--", "entrypoint.sh"]
+CMD [ "/usr/local/bin/run_jupyter.sh", "--no-browser", "--ip=0.0.0.0", "--allow-root", "--NotebookApp.token="]
+
+USER $NB_UID

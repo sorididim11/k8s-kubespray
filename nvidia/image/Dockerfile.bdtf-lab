@@ -1,0 +1,72 @@
+# ==================================================================
+# module list
+# ------------------------------------------------------------------
+# anaconda3     5.2.0
+# python        3.6    
+# ==================================================================
+ARG DEVICE_TYPE=gpu
+ARG VERSION
+FROM sorididim11/mlbasic-lab-$DEVICE_TYPE:$VERSION
+
+ARG VERSION
+ARG DEVICE_TYPE
+LABEL version=$VERSION device-type=$DEVICE_TYPE
+
+USER root
+
+RUN apt-get update --fix-missing && DEBIAN_FRONTEND=noninteractive \
+    apt-get install -y \
+            autotools-dev \
+            automake \
+            autoconf \
+            && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
+
+USER root
+
+# ==================================================================
+# conda package install
+# ------------------------------------------------------------------
+COPY install-py-pkgs.sh /tmp/install-py-pkgs.sh
+RUN /tmp/install-py-pkgs.sh $DEVICE_TYPE && \
+    fix-permissions $CONDA_DIR && \
+    fix-permissions /home/$NB_USER
+
+
+
+
+RUN  if [ "$DEVICE_TYPE" = "gpu" ] ; then ln -s /usr/local/cuda-9.0/lib64/libcurand.so.9.0 /usr/local/cuda-9.0/lib64/libcurand.so.8.0 ; fi
+# ==================================================================
+# mecab analyzer from bitbucket
+# ------------------------------------------------------------------
+RUN wget --quiet http://bitbucket.org/eunjeon/mecab-ko/downloads/mecab-0.996-ko-0.9.2.tar.gz -O mecab.tar.gz && \
+    tar -zxf mecab.tar.gz && \
+    cd mecab-0.996-ko-0.9.2 && \
+    ./configure && \
+    make && \ 
+    make check && \
+    make install && \
+    ldconfig && \
+    rm -rf ../mecab.tar.gz ../mecab-0.996-ko-0.9.2
+
+# ==================================================================
+# mecab dictionary from bitbucket
+# ------------------------------------------------------------------
+RUN wget --quiet http://bitbucket.org/eunjeon/mecab-ko-dic/downloads/mecab-ko-dic-2.1.1-20180720.tar.gz -O mecab-dic.tar.gz && \
+    tar -zxf mecab-dic.tar.gz && \
+    cd mecab-ko-dic-2.1.1-20180720 && \
+    ./autogen.sh  && \
+    ./configure && \
+    make && \
+    make check && \
+    make install && \
+    ldconfig && \
+    rm -rf ../mecab-dic.tar.gz ../mecab-ko-dic-2.1.1-20180720
+
+
+RUN pip install --quiet --no-cache-dir mecab-python3==0.7
+
+
+USER $NB_UID

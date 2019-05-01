@@ -1,0 +1,148 @@
+# shinhan-os:cpu - ubuntu:16.04
+# shinhan-os:gpu - nvidia/cuda:9.0-cudnn7-devel-ubuntu16.04
+
+ARG DEVICE_TYPE
+ARG VERSION
+
+FROM sorididim11/shinhan-os:$DEVICE_TYPE
+
+ARG VERSION
+LABEL version=$VERSION device_type=$DEVICE_TYPE
+USER root
+# ==================================================================
+# base tools/libs
+# ------------------------------------------------------------------
+RUN APT_INSTALL="apt-get install -y --no-install-recommends" && \
+    PIP_INSTALL="python -m pip --no-cache-dir install --upgrade" && \
+    rm -rf /var/lib/apt/lists/* \
+           /etc/apt/sources.list.d/cuda.list \
+           /etc/apt/sources.list.d/nvidia-ml.list && \
+    apt-get update && \
+# ==================================================================
+# tools
+# ------------------------------------------------------------------
+    DEBIAN_FRONTEND=noninteractive $APT_INSTALL \
+        build-essential \
+        ca-certificates \
+        cmake \
+        unzip grep sed dpkg bzip2 rsync \
+        libglib2.0-0 libxext6 libsm6 libxrender1 \
+        libfreetype6-dev libhdf5-serial-dev libpng12-dev libzmq3-dev pkg-config \
+        curl \
+        wget \
+        git \
+        vim \
+        build-essential \
+        unixodbc \
+        unixodbc-dev \
+        libsasl2-dev \
+        alien \
+        libaio1 \
+        libaio-dev \
+        default-jdk \ 
+        sudo \
+        locales \
+          && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
+RUN echo "en_US.UTF-8 UTF-8" > /etc/locale.gen && \
+    locale-gen
+
+RUN  TINI_VERSION=`curl https://github.com/krallin/tini/releases/latest | grep -o "/v.*\"" | sed 's:^..\(.*\).$:\1:'` && \
+    curl -L "https://github.com/krallin/tini/releases/download/v${TINI_VERSION}/tini_${TINI_VERSION}.deb" > tini.deb && \
+    dpkg -i tini.deb && \
+    rm tini.deb && \
+    apt-get clean
+
+
+# ==================================================================
+# Connector base
+# ------------------------------------------------------------------
+ENV SHELL /bin/bash
+ENV JAVA_HOME /usr/lib/jvm/java-8-openjdk-amd64
+ENV ORACLE_HOME /usr/lib/oracle/12.2/client64  
+ENV PATH $JAVA_HOME/bin:$ORACLE_HOME/bin:$PATH 
+ENV LD_LIBRARY_PATH /usr/lib/x86_64-linux-gnu:$ORACLE_HOME/lib 
+ENV LD_PRELOAD /usr/lib/x86_64-linux-gnu/libodbcinst.so 
+
+COPY odbcinst.ini /etc/odbcinst.ini
+COPY odbc.ini /etc/odbc.ini
+COPY cloudera/ /data/
+COPY connector/datalake.properties /etc/datalake/datalake.properties
+COPY connector/JdbcClient.java /usr/local/bin/
+COPY connector/jdbc-cli /usr/local/bin
+COPY oracle/ /data/
+COPY oracle/tnsnames.ora $ORACLE_HOME/network/admin/
+
+
+# ==================================================================
+# cloudera hive/impala - odbc/jdbc
+# ------------------------------------------------------------------
+RUN  apt-get install -y -f /data/clouderahiveodbc_2.5.25.1020-2_amd64.deb && \
+    apt-get install -y -f /data/clouderaimpalaodbc_2.5.42.1031-2_amd64.deb && \
+    rm -rf /opt/cloudera/hiveodbc/lib/64/cloudera.*.ini && \    
+    rm -rf /opt/cloudera/impalaodbc/lib/64/cloudera.*.ini && \    
+    cp /data/cloudera.*.ini /etc/ && \
+    cp /data/HiveJDBC41.jar /data/ImpalaJDBC41.jar /usr/lib/jvm/java-8-openjdk-amd64/jre/lib/ext
+
+
+# ==================================================================
+# Oracle sqlplus, odbc/jdbc
+# ------------------------------------------------------------------
+RUN alien -i /data/oracle-instantclient12.2-basic-12.2.0.1.0-1.x86_64.rpm && \
+    alien -i /data/oracle-instantclient12.2-sqlplus-12.2.0.1.0-1.x86_64.rpm && \
+    alien -i /data/oracle-instantclient12.2-devel-12.2.0.1.0-1.x86_64.rpm && \
+    alien -i /data/oracle-instantclient12.2-odbc-12.2.0.1.0-2.x86_64.rpm && \
+    alien -i /data/oracle-instantclient12.2-jdbc-12.2.0.1.0-1.x86_64.rpm && \
+    cp /usr/lib/oracle/12.2/client64/lib/ojdbc8.jar /usr/lib/jvm/java-8-openjdk-amd64/jre/lib/ext
+
+# ==================================================================
+# Hive JDBC CLI client
+# ------------------------------------------------------------------
+RUN javac /usr/local/bin/JdbcClient.java && \
+    chmod 755 /usr/local/bin/jdbc-cli && \
+    chmod -R 777 /etc/datalake
+
+# ==================================================================
+# User, Home, UID/GID
+# ------------------------------------------------------------------
+
+ADD fix-permissions /usr/local/bin/fix-permissions
+
+ENV CONDA_DIR=/opt/conda \    
+    NB_USER=jovyan \
+    HOME=/home/jovyan \
+    NB_UID=1000 \
+    NB_GID=100 
+
+RUN useradd -m -s /bin/bash -N -u $NB_UID $NB_USER && \
+    mkdir -p $CONDA_DIR && \
+    chown $NB_USER:$NB_GID $CONDA_DIR && \
+    chmod g+w /etc/passwd /etc/group && \
+    rm -rf /home/$NB_USER/.rpmdb && \
+    fix-permissions $CONDA_DIR  && \
+    fix-permissions $HOME
+
+# Setup work directory for backward-compatibility
+USER $NB_UID
+
+RUN mkdir /home/$NB_USER/notebooks && \
+    cp $ORACLE_HOME/network/admin/tnsnames.ora /home/$NB_USER/.tnsnames.ora && \
+    cp /etc/odbc.ini /home/$NB_USER/.odbc.ini && \
+    echo "export LD_LIBRARY_PATH=/usr/lib/x86_64-linux-gnu:$ORACLE_HOME/lib" >> /home/$NB_USER/.bashrc && \
+    echo "export PATH=$JAVA_HOME/bin:$ORACLE_HOME/bin:$PATH" >> /home/$NB_USER/.bashrc && \
+    fix-permissions /home/$NB_USER 
+
+
+
+
+USER root
+WORKDIR /home/$NB_USER
+COPY entrypoint.sh /usr/local/bin/
+ENTRYPOINT [ "/usr/bin/tini", "--", "entrypoint.sh"]
+
+USER $NB_UID
+
+# when running container, with -e flag for env, uid like uid=000, it works but wanna use k8s user flag instead of env
+# ENTRYPOINT [ "/usr/bin/tini", "--", "/usr/local/bin/entrypoint.sh"]

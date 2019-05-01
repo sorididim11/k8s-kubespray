@@ -1,0 +1,23 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: job-oneshot
+  labels:
+    who: sorididim11
+spec:
+  template:
+    metadata:
+      labels:
+        who: sorididim11
+    spec:
+      containers:
+        - name: kuard
+          image: gcr.io/kuar-demo/kuard-amd64:1
+          imagePullPolicy: Always
+          args:
+            - "--keygen-enable"
+            - "--keygen-exit-on-complete"
+            - "--keygen-exit-code=1"
+            - "--keygen-num-to-gen=10"
+      restartPolicy: OnFailure
+    

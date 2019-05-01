@@ -1,0 +1,45 @@
+#!/bin/bash
+
+set -e
+
+usage() { echo "Usage: $0 [-t {oracle|hive}]  [-q <query> must be in a quote.] [-o <csv file name> ex) mytable.csv] [-s separator. must be in a quote. default: \",\"]" 1>&2; exit 1; }
+
+while getopts ":t:q:o:s:h:" flag; do
+    case "${flag}" in
+        t)
+            t=${OPTARG}
+            ;;
+        q)
+            q=${OPTARG}
+            ;;
+        o)
+            o=${OPTARG}
+            ;;
+        s)
+            s=${OPTARG}
+            ;;
+        h)
+            usage
+            ;;                
+        *)
+            usage
+            ;;
+    esac
+done
+shift $((OPTIND-1))
+
+if [ -z "${t}" ] || [ -z "${q}" ] || [ -z "${o}" ]; then
+    usage
+fi
+
+if [ -z "${s}" ]; then
+  s=","
+fi
+
+echo "t = ${t}"
+echo "q = ${q}"
+echo "o = ${o}"
+echo "s = ${s}"
+
+
+java -XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap -cp /usr/local/bin JdbcClient "${t}" "${q}" "${o}" "${s}"

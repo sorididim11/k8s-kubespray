@@ -1,0 +1,134 @@
+# before doing this, update api server conf to enable basice-user by volume mouting password file 
+# 
+
+# for user, alice which has no auth at all at the beginining
+kind: Role
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  namespace: default
+  name: pod-reader
+rules:
+- apiGroups: [""] # "" indicates the core API group
+  resources: ["pods"]
+  verbs: ["create", "get", "watch", "list"]
+
+---
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: pod-reader
+  namespace: default
+subjects:
+- kind: User
+  name: alice
+  apiGroup: rbac.authorization.k8s.io
+roleRef:
+  kind: Role #this must be Role or ClusterRole
+  name: pod-reader # this must match the name of the Role or ClusterRole you wish to bind to
+  apiGroup: rbac.authorization.k8s.io
+
+
+---
+apiVersion: extensions/v1beta1
+kind: PodSecurityPolicy
+metadata:
+  name: default
+spec:
+  hostIPC: false                 
+  hostPID: false                 
+  hostNetwork: false             
+  hostPorts:                     
+  - min: 10000                   
+    max: 11000                   
+  - min: 13000                   
+    max: 14000                   
+  privileged: false              
+  readOnlyRootFilesystem: true   
+  runAsUser:                     
+    rule: RunAsAny               
+  fsGroup:                       
+    rule: RunAsAny               
+  supplementalGroups:            
+    rule: RunAsAny               
+  seLinux:                       
+    rule: RunAsAny               
+  volumes:                       
+  - '*'                          
+
+---
+
+apiVersion: extensions/v1beta1
+kind: PodSecurityPolicy
+metadata:
+  name: privileged          
+spec:
+  privileged: true          
+  runAsUser:
+    rule: RunAsAny
+  fsGroup:
+    rule: RunAsAny
+  supplementalGroups:
+    rule: RunAsAny
+  seLinux:
+    rule: RunAsAny
+  volumes:
+  - '*'
+
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: psp-default
+rules:
+- apiGroups:
+  - extensions
+  resourceNames:
+  - default
+  resources:
+  - podsecuritypolicies
+  verbs:
+  - use
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: psp-privilege
+rules:
+- apiGroups:
+  - extensions
+  resourceNames:
+  - privileged
+  resources:
+  - podsecuritypolicies
+  verbs:
+  - use
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: psp-bob
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: psp-privilege
+subjects:
+- apiGroup: rbac.authorization.k8s.io
+  kind: User
+  name: bob
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: psp-all-users
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: psp-default
+subjects:
+- apiGroup: rbac.authorization.k8s.io
+  kind: User
+  name: system:authenticated

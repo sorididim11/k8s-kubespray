@@ -1,0 +1,46 @@
+ARG DEVICE_TYPE=gpu
+ARG VERSION
+FROM sorididim11/bdtf-lab-$DEVICE_TYPE:$VERSION
+
+ARG VERSION
+ARG DEVICE_TYPE
+LABEL version=$VERSION device-type=$DEVICE_TYPE
+
+
+USER root 
+
+# update cmake to 3.10
+RUN conda install --yes --quiet -c anaconda cmake
+# RUN wget --quiet http://www.cmake.org/files/v3.10/cmake-3.10.1.tar.gz -O  /tmp/cmake-3.10.1.tar.gz && \
+#     cd /tmp && \
+#     tar -xvzf cmake-3.10.1.tar.gz && \
+#     cd cmake-3.10.1/ && \
+#     ./configure && \
+#     make && make install && \
+#     update-alternatives --install /usr/bin/cmake cmake /usr/local/bin/cmake 1 --force
+
+
+RUN cd /tmp && git clone https://github.com/kakao/khaiii.git && \
+    cd khaiii && \
+    pip install -r requirements.txt && \
+    mkdir build && cd build && \
+    cmake .. && \
+    make all && \
+    make resource && \
+    make large_resource && \
+    make install && \
+    make package_python && \ 
+    cd package_python && pip install  --quiet --no-cache-dir . && \
+    rm -rf /tmp/khaiii && \
+    fix-permissions $CONDA_DIR && \
+    fix-permissions /home/$NB_USER
+
+
+USER $NB_UID
+
+RUN  conda install memory_profiler==0.54  && \
+    conda clean -tipsy && \
+    pip install --quiet --no-cache-dir ipython_memory_usage==1.1 nbresuse==0.3.0 
+
+
+USER $NB_UID

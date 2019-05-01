@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Job
+spec:
+  template:
+    spec:
+      securityContext:
+        runAsUser: 0
+      containers:
+      - name: bdtf-container
+        image: "localhost:5000/bdtf-lab-gpu:1.0.0"
+        command: ["jupyter"]
+        args: ["main.sh"]
+        env:
+        - name: NB_UID
+          value: "3003" # linux UID
+        - name: NB_GID
+          value: "3003"  
+        resources:
+          limits:
+            cpu: 10
+            memory: 200Gi
+            nvidia.com/gpu: 2 # requesting 2 GPUs
+        volumeMounts:
+          - name: data
+            mountPath: /home/jovyan/notebooks/data
+          - name: src
+            mountPath: /home/jovyan/notebooks/src
+          - name: datalake
+            mountPath: "/etc/datalake"
+      volumes:
+       - name: data
+         hostPath: 
+           path: /ML_UNL/k8s/user/btdf-op1/data
+       - name: src
+         hostPath: 
+           path: /ML_UNL/k8s/user/btdf-op1/src
+       - name: datalake
+         secret: 
+           secretName: shd011

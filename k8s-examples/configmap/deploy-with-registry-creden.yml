@@ -1,0 +1,29 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dep-registry-secret
+spec:
+  selector:
+    matchLabels:
+      app: my-secret-registry
+  template:
+    metadata:
+      labels:
+        app: my-secret-registry
+    spec:
+      containers:
+      - name: container1
+        image: sorididim11/marathon-dcos-ee:v1.4.7_1.9.8
+        imagePullPolicy: Always
+  
+        volumeMounts:
+          - name: my-secret-volume
+            mountPath: /tls
+            readOnly: true
+      imagePullSecrets:
+        - name: registry-secret
+      volumes:
+        - name: my-secret-volume
+          secret:
+            secretName: my-secret
+              

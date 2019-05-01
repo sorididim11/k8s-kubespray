@@ -1,0 +1,13 @@
+[docker-ce]
+name=Docker-CE Repository
+enabled=1
+{% if offline_install is defined and offline_install == True %}
+gpgcheck=0
+baseurl={{ docker_rh_repo_base_url }}
+{% else %}
+gpgcheck=1
+gpgkey={{ docker_rh_repo_gpgkey }}
+baseurl=https://download.docker.com/linux/centos/7/$basearch/stable
+{% endif %}
+{% if http_proxy is defined %}proxy={{ http_proxy }}{% endif %}
+

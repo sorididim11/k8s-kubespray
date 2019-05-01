@@ -1,0 +1,31 @@
+---
+
+- name: Build persistent storage spec
+  template:
+      src: storage_values.yml.j2
+      dest: /tmp/storage_values.yml
+  when: monitoring_storage_class | length >  0
+  
+
+- set_fact:
+    storage_opts: "{% if monitoring_storage_class != '' %} -f /tmp/storage_values.yml {% else %} {% endif %}" 
+
+- name: Copy chart to master[0]
+  copy:
+      src: "{{item}}" 
+      dest: /tmp/
+  with_items:
+  - prometheus-operator-0.0.29.tgz 
+  - kube-prometheus-0.0.105-gpu.tgz
+      
+
+
+- name: Install prometheus operator chart
+  shell: "/usr/local/bin/helm install {{ item.options }} /tmp/{{ item.chart_name }} --name {{ item.rel_name }} --namespace {{ monitoring_namespace }}"
+  with_items:
+  - { rel_name: prometheus-operator, chart_name: prometheus-operator-0.0.29.tgz, options: "" }
+  - { rel_name: kube-prometheus, chart_name: kube-prometheus-0.0.105-gpu.tgz, options: "{{storage_opts}}"}
+  register: tiller_ready
+  retries: 10
+  delay: 60
+  until: tiller_ready.rc == 0

@@ -1,0 +1,303 @@
+downloads:
+    all-jupyter-py36-cu90:
+    enabled: true
+    container: true
+    repo: "ufoym/deepo"
+    tag: "all-jupyter-py36-cu90"
+    groups:
+      - kube-node
+  all-jupyter-py36-cu80:
+    enabled: true
+    container: true
+    repo: "ufoym/deepo"
+    tag: "all-jupyter-py36-cu80"
+    groups:
+      - kube-node
+  all-jupyter-py36-cpu:
+    enabled: true
+    container: true
+    repo: "ufoym/deepo"
+    tag: "all-jupyter-py36-cpu"
+    groups:
+      - kube-node
+  all-py27-jupyter:
+    enabled: true
+    container: true
+    repo: "ufoym/deepo"
+    tag: "all-py27-jupyter"     # cu90
+    groups:
+      - kube-node 
+  all-py27-jupyter-cpu:
+    enabled: true
+    container: true
+    repo: "ufoym/deepo"
+    tag: "all-py27-jupyter-cpu"     
+    groups:
+      - kube-node  
+
+  all-py27-jupyter-cu80:
+    enabled: true
+    container: true
+    repo: "ufoym/deepo"
+    tag: "all-jupyter-py27-cu80"     
+    groups:
+      - kube-node  
+  all-py36-jupyter-cu80:
+    enabled: true
+    container: true
+    repo: "ufoym/deepo"
+    tag: "all-jupyter-py36-cu80"     
+    groups:
+      - kube-node  
+  theano-py36-cu90:
+    enabled: true
+    container: true
+    repo: "ufoym/deepo"
+    tag: "theano-py36-cu90"     
+    groups:
+      - kube-node  
+  sonnet-py36-cu90:
+    enabled: true
+    container: true
+    repo: "ufoym/deepo"
+    tag: "sonnet-py36-cu90"     
+    groups:
+      - kube-node 
+  sonnet-py27-cu90:
+    enabled: true
+    container: true
+    repo: "ufoym/deepo"
+    tag: "sonnet-py27-cu90"     
+    groups:
+      - kube-node 
+  sonnet-py36-cpu:
+    enabled: true
+    container: true
+    repo: "ufoym/deepo"
+    tag: "sonnet-py36-cpu"     
+    groups:
+      - kube-node 
+  sonnet-py27-cpu:
+    enabled: true
+    container: true
+    repo: "ufoym/deepo"
+    tag: "sonnet-py27-cpu"     
+    groups:
+      - kube-node 
+  pytorch-py36-cu90:
+    enabled: true
+    container: true
+    repo: "ufoym/deepo"
+    tag: "pytorch-py36-cu90"     
+    groups:
+      - kube-node 
+  pytorch-py27-cu90:
+    enabled: true
+    container: true
+    repo: "ufoym/deepo"
+    tag: "pytorch-py27-cu90"     
+    groups:
+      - kube-node 
+  pytorch-py36:
+    enabled: true
+    container: true
+    repo: "ufoym/deepo"
+    tag: "pytorch-py36"     
+    groups:
+      - kube-node 
+  pytorch-py27:
+    enabled: true
+    container: true
+    repo: "ufoym/deepo"
+    tag: "pytorch-py27"     
+    groups:
+      - kube-node 
+  keras-py36-cu90:
+    enabled: true
+    container: true
+    repo: "ufoym/deepo"
+    tag: "keras-py36-cu90"     
+    groups:
+      - kube-node 
+  keras-py27-cu90:
+    enabled: true
+    container: true
+    repo: "ufoym/deepo"
+    tag: "keras-py27-cu90"     
+    groups:
+      - kube-node 
+  keras-py36-cpu:
+    enabled: true
+    container: true
+    repo: "ufoym/deepo"
+    tag: "keras-py36-cpu"     
+    groups:
+      - kube-node 
+  keras-py27-cpu:
+    enabled: true
+    container: true
+    repo: "ufoym/deepo"
+    tag: "keras-py27-cpu"     
+    groups:
+      - kube-node 
+  lasagne-py36-cu90:
+    enabled: true
+    container: true
+    repo: "ufoym/deepo"
+    tag: "lasagne-py36-cu90"     
+    groups:
+      - kube-node 
+  lasagne-py27-cu90:
+    enabled: true
+    container: true
+    repo: "ufoym/deepo"
+    tag: "lasagne-py27-cu90"     
+    groups:
+      - kube-node 
+  lasagne-py36-cpu:
+    enabled: true
+    container: true
+    repo: "ufoym/deepo"
+    tag: "lasagne-py36-cpu"     
+    groups:
+      - kube-node 
+  lasagne-py27-cpu:
+    enabled: true
+    container: true
+    repo: "ufoym/deepo"
+    tag: "lasagne-py27-cpu"     
+    groups:
+      - kube-node 
+  cntk-py36-cu90:
+    enabled: true
+    container: true
+    repo: "ufoym/deepo"
+    tag: "cntk-py36-cu90"     
+    groups:
+      - kube-node 
+  cntk-py27-cu90:
+    enabled: true
+    container: true
+    repo: "ufoym/deepo"
+    tag: "cntk-py27-cu90"     
+    groups:
+      - kube-node 
+  cntk-py36-cpu:
+    enabled: true
+    container: true
+    repo: "ufoym/deepo"
+    tag: "cntk-py36-cpu"     
+    groups:
+      - kube-node 
+  cntk-py27-cpu:
+    enabled: true
+    container: true
+    repo: "ufoym/deepo"
+    tag: "cntk-py27-cpu"     
+    groups:
+      - kube-node 
+  chainer-py36-cu90:
+    enabled: true
+    container: true
+    repo: "ufoym/deepo"
+    tag: "chainer-py36-cu90"     
+    groups:
+      - kube-node 
+  chainer-py27-cu90:
+    enabled: true
+    container: true
+    repo: "ufoym/deepo"
+    tag: "chainer-py27-cu90"     
+    groups:
+      - kube-node 
+  chainer-py36-cpu:
+    enabled: true
+    container: true
+    repo: "ufoym/deepo"
+    tag: "chainer-py36-cpu"     
+    groups:
+      - kube-node 
+  chainer-py27-cpu:
+    enabled: true
+    container: true
+    repo: "ufoym/deepo"
+    tag: "chainer-py27-cpu"     
+    groups:
+      - kube-node 
+  caffe-py36-cu90:
+    enabled: true
+    container: true
+    repo: "ufoym/deepo"
+    tag: "caffe-py36-cu90"     
+    groups:
+      - kube-node 
+  caffe-py27-cu90:
+    enabled: true
+    container: true
+    repo: "ufoym/deepo"
+    tag: "caffe-py27-cu90"     
+    groups:
+      - kube-node 
+  caffe-py36-cpu:
+    enabled: true
+    container: true
+    repo: "ufoym/deepo"
+    tag: "caffe-py36-cpu"     
+    groups:
+      - kube-node 
+  caffe-py27-cpu:
+    enabled: true
+    container: true
+    repo: "ufoym/deepo"
+    tag: "caffe-py27-cpu"     
+    groups:
+      - kube-node 
+  caffe2-py36-cu90:
+    enabled: true
+    container: true
+    repo: "ufoym/deepo"
+    tag: "caffe2-py36-cu90"     
+    groups:
+      - kube-node 
+  caffe2-py27-cu90:
+    enabled: true
+    container: true
+    repo: "ufoym/deepo"
+    tag: "caffe2-py27-cu90"     
+    groups:
+      - kube-node 
+  caffe2-py36-cpu:
+    enabled: true
+    container: true
+    repo: "ufoym/deepo"
+    tag: "caffe2-py36-cpu"     
+    groups:
+      - kube-node 
+  caffe2-py27-cpu:
+    enabled: true
+    container: true
+    repo: "ufoym/deepo"
+    tag: "caffe2-py27-cpu"     
+    groups:
+      - kube-node 
+  torch-cu90:
+    enabled: true
+    container: true
+    repo: "ufoym/deepo"
+    tag: "torch-cu90"     
+    groups:
+      - kube-node 
+  torch-cpu:
+    enabled: true
+    container: true
+    repo: "ufoym/deepo"
+    tag: "torch-cpu"     
+    groups:
+      - kube-node 
+  rstudio:
+    enabled: true
+    container: true
+    repo: "rocker/rstudio"
+    tag: "3.5.1"     
+    groups:
+      - kube-node 

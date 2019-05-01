@@ -1,0 +1,4 @@
+monitoring_namespace: monitoring
+
+monitoring_storage_class: managed-nfs-storage
+monitoring_storage_volume_size: 10G

@@ -1,0 +1,56 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: kin
+  namespace: bar
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  namespace: bar
+  name: service-read-role
+rules:
+- apiGroups: [""]
+  verbs: ["get", "list"]
+  resources: ["services"]
+
+---
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  namespace: bar
+  name: kin-service-read
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: service-read-role
+subjects:
+- kind: ServiceAccount
+  namespace: bar
+  name: kin
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: bar
+  name: curl-apiserver-dep
+spec:
+  selector:
+    matchLabels:
+      app: curl-apiserver
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: curl-apiserver
+    spec:
+      serviceAccountName: kin
+      containers:
+      - name: main
+        image: tutum/curl
+        command: ["sleep", "infinity"]
+      - name: ambassador
+        image: luksa/kubectl-proxy:1.6.2

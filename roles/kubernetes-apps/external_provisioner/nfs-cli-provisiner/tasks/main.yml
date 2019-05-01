@@ -1,0 +1,36 @@
+---
+
+- name: NFS-Client Provisiner | Create addon dir
+  file:
+    path: "{{ kube_config_dir }}/addons/nfs-client-provisioner"
+    state: directory
+    owner: root
+    group: root
+    mode: 0755
+
+- name: NFS-Client Provisiner | Create manifests
+  template:
+    src: "{{ item.file }}.j2"
+    dest: "{{ kube_config_dir }}/addons/nfs-client-provisioner/{{ item.file }}"
+  with_items:
+    - { name: nfs-cli-ns, file: nfs-cli-ns.yml, type: ns }
+    - { name: nfs-cli-sa, file: nfs-cli-sa.yml, type: sa }        
+    - { name: nfs-cli-clusterrole, file: nfs-cli-clusterrole.yml, type: clusterrole }
+    - { name: nfs-cli-clusterrolebinding, file: nfs-cli-clusterrolebinding.yml, type: clusterrolebinding }    
+    - { name: nfs-cli-provisioner-deploy, file: nfs-cli-provisioner-deploy.yml, type: deploy }
+    - { name: nfs-cli-sc, file: nfs-cli-sc.yml, type: sc }
+  register: nfs_cli_manifests
+  when:
+    - inventory_hostname == groups['kube-master'][0]
+
+- name: NFS-Client Provisiner | Apply manifests
+  kube:
+    name: "{{ item.item.name }}"
+    namespace: "{{ nfs_client_provisioner_namespace }}"
+    kubectl: "{{ bin_dir }}/kubectl"
+    resource: "{{ item.item.type }}"
+    filename: "{{ kube_config_dir }}/addons/nfs-client-provisioner/{{ item.item.file }}"
+    state: "latest"
+  with_items: "{{ nfs_cli_manifests.results }}"
+  when:
+    - inventory_hostname == groups['kube-master'][0]

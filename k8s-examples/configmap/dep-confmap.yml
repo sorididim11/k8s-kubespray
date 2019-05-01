@@ -1,0 +1,64 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  annotations:
+    deployment.kubernetes.io/revision: "5"
+    kubectl.kubernetes.io/last-applied-configuration: |
+      {"apiVersion":"apps/v1","kind":"Deployment","metadata":{"annotations":{},"name":"dep-cofmap","namespace":"default"},"spec":{"selector":{"matchLabels":{"app":"my-config-app"}},"template":{"metadata":{"labels":{"app":"my-config-app"}},"spec":{"containers":[{"command":["/kuard","$(EXTRA_PARAM_FROM_CONFIGMAP)"],"env":[{"name":"FIRST_PARAM_FROM_CONFIGMAP","valueFrom":{"configMapKeyRef":{"key":"my-config.txt","name":"my-config"}}},{"name":"EXTRA_PARAM_FROM_CONFIGMAP","valueFrom":{"configMapKeyRef":{"key":"my-config.txt","name":"my-config"}}}],"image":"gcr.io/kuar-demo/kuard-amd64:1","imagePullPolicy":"Always","name":"container1","volumeMounts":[{"mountPath":"/config","name":"config-volume"}]}],"volumes":[{"configMap":{"name":"my-config"},"name":"config-volume"}]}}}}
+  creationTimestamp: null
+  generation: 1
+  name: dep-cofmap
+  selfLink: /apis/extensions/v1beta1/namespaces/default/deployments/dep-cofmap
+spec:
+  progressDeadlineSeconds: 600
+  replicas: 1
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      app: my-config-app
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+    type: RollingUpdate
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: my-config-app
+    spec:
+      containers:
+      - command:
+        - /kuard
+        - $(EXTRA_PARAM_FROM_CONFIGMAP)
+        env:
+        - name: FIRST_PARAM_FROM_CONFIGMAP
+          valueFrom:
+            configMapKeyRef:
+              key: my-config.txt
+              name: my-config
+        - name: EXTRA_PARAM_FROM_CONFIGMAP
+          valueFrom:
+            configMapKeyRef:
+              key: my-config.txt
+              name: my-config
+        image: gcr.io/kuar-demo/kuard-amd64:1
+        imagePullPolicy: Always
+        name: container1
+        resources: {}
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+        volumeMounts:
+        - mountPath: /config
+          name: config-volume
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext: {}
+      terminationGracePeriodSeconds: 30
+      volumes:
+      - configMap:
+          defaultMode: 420
+          name: my-config
+        name: config-volume
+status: {}

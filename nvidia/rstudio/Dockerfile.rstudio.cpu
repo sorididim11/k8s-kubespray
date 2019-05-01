@@ -1,0 +1,64 @@
+FROM sorididim11/datalake-conn:cpu-ubuntu16.04 as connector
+
+
+FROM rocker/geospatial
+
+COPY --from=connector /data/ /data/
+COPY --from=connector /etc/*.ini /etc/
+
+
+# ==================================================================
+# Unixodbc & clouder hive/impla odbc 
+# ------------------------------------------------------------------
+RUN  apt-get update --fix-missing && apt-get install -y unixodbc unixodbc-dev alien libaio1 libaio-dev && \
+    apt-get install -y -f /data/clouderahiveodbc_2.5.25.1020-2_amd64.deb && \
+    apt-get install -y -f /data/clouderaimpalaodbc_2.5.42.1031-2_amd64.deb && \
+    rm -rf /opt/cloudera/hiveodbc/lib/64/cloudera.hiveodbc.ini && \
+    rm -rf /opt/cloudera/hiveodbc/lib/64/cloudera.impalaodbc.ini && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
+#ENV LD_LIBRARY_PATH /usr/lib/x86_64-linux-gnu:$LD_LIBRARY_PATH
+
+# ==================================================================
+# Oracle sqlplus & odbc extension
+# ------------------------------------------------------------------
+
+RUN alien -i /data/oracle-instantclient12.2-basic-12.2.0.1.0-1.x86_64.rpm && \
+    alien -i /data/oracle-instantclient12.2-sqlplus-12.2.0.1.0-1.x86_64.rpm && \
+    alien -i /data/oracle-instantclient12.2-devel-12.2.0.1.0-1.x86_64.rpm && \
+    alien -i /data/oracle-instantclient12.2-odbc-12.2.0.1.0-2.x86_64.rpm && \
+    alien -i /data/oracle-instantclient12.2-jdbc-12.2.0.1.0-1.x86_64.rpm && \
+    cp /usr/lib/oracle/12.2/client64/lib/ojdbc8.jar /usr/lib/jvm/java-8-openjdk-amd64/jre/lib/ext
+
+COPY --from=connector  /usr/lib/oracle/12.2/client64/network/admin/tnsnames.ora /usr/lib/oracle/12.2/client64/network/admin/tnsnames.ora
+
+
+# ==================================================================
+# R packages upgrade + odbc install 
+# ------------------------------------------------------------------  
+RUN  bash -c "R -e \"install.packages('stargazer'); \
+                     install.packages('odbc'); \
+                     install.packages('DataExplorer'); \
+                     install.packages('AER'); \
+                     install.packages('xgboost')\"" 
+RUN  bash -c "Rscript -e \"update.packages(ask=F)\"" 
+
+ENV ORACLE_HOME /usr/lib/oracle/12.2/client64
+ENV PATH $PATH:$ORACLE_HOME/bin
+ENV LD_LIBRARY_PATH $LD_LIBRARY_PATH:$ORACLE_HOME/lib
+
+
+# ==================================================================
+# user-level odbc config for user, rstudio
+# ------------------------------------------------------------------
+RUN cp /etc/odbc.ini /home/rstudio/.odbc.ini && \
+    cp /etc/cloudera.hiveodbc.ini /home/rstudio/.cloudera.hiveodbc.ini && \
+     cp /etc/cloudera.impalaodbc.ini /home/rstudio/.cloudera.impalaodbc.ini && \
+    cp $ORACLE_HOME/network/admin/tnsnames.ora /home/rstudio/.tnsnames.ora && \
+    chown rstudio:rstudio /home/rstudio/.*
+
+COPY profile /home/rstudio/.profile
+
+
+EXPOSE 8787 

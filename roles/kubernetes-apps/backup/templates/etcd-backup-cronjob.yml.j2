@@ -1,0 +1,60 @@
+apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+  name: backup
+  namespace: {{ etcd_namespace }}
+spec:  
+  schedule: "{{ etcd_backup_schedule }}"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+          - name: backup-etcd            
+            image: quay.io/coreos/etcd:v3.2.18            
+            command: ["/bin/sh"]
+            args: 
+            - -c
+            - source /etc/etcd.env; 
+              backupName=/backup/$(date +'%Y-%m-%d-%H-%M');
+              mkdir -p $backupName;
+              ETCDCTL_API=2 etcdctl --endpoints $ETCD_LISTEN_CLIENT_URLS --ca-file $ETCD_TRUSTED_CA_FILE --cert-file $ETCD_CERT_FILE --key-file $ETCD_KEY_FILE backup --data-dir $ETCD_DATA_DIR --backup-dir $backupName; 
+              ETCDCTL_API=3 etcdctl --endpoints $ETCD_LISTEN_CLIENT_URLS --cacert $ETCD_TRUSTED_CA_FILE --cert $ETCD_CERT_FILE --key $ETCD_KEY_FILE snapshot save $backupName/member/snap/db;
+              tar -zcvf $backupName.tar.gz $backupName && rm -rf $backupName
+            volumeMounts:
+            - mountPath: /etc/ssl/etcd/ssl
+              name: etcd-certs
+              readOnly: true
+            - mountPath: /etc/etcd.env
+              name: etcd-env
+              readOnly: true
+            - mountPath: /var/lib/etcd
+              name: etcd-data
+            - mountPath: /backup
+              name: backup
+          restartPolicy: OnFailure
+          nodeSelector:
+            kubernetes.io/hostname: {{ etcd_master_node }}
+          tolerations:
+          - effect: NoSchedule
+            operator: Exists
+          hostNetwork: true
+          volumes:
+          - name: etcd-certs
+            hostPath:
+              path: /etc/ssl/etcd/ssl
+              type: DirectoryOrCreate
+          - name: etcd-env
+            hostPath:
+              path: /etc/etcd.env
+          - name: etcd-data
+            hostPath:
+              path: /var/lib/etcd              
+          - name: backup
+{% if etcd_storage_class != "" %}          
+            persistentVolumeClaim:
+              claimName: backup-pvc
+{% else %}
+            hostPath:
+              path: {{ etcd_backup_path }}
+{% endif %}

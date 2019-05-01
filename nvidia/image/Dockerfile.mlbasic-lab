@@ -1,0 +1,75 @@
+# ==================================================================
+# module list
+# ------------------------------------------------------------------
+# anaconda3     5.2.0
+# python        3.6    
+# ==================================================================
+ARG  DEVICE_TYPE=gpu
+ARG VERSION
+FROM sorididim11/dl-base-$DEVICE_TYPE:$VERSION
+
+ARG VERSION
+ARG DEVICE_TYPE
+LABEL version=$VERSION device-type=$DEVICE_TYPE
+
+ENV LANG=C.UTF-8 LC_ALL=C.UTF-8
+ENV PATH=/opt/conda/bin:$PATH
+ENV LD_LIBRARY_PATH /usr/local/cuda/extras/CUPTI/lib64:/usr/local/cuda/lib64:$LD_LIBRARY_PATH
+
+USER $NB_UID
+# anaconda3 install
+# COPY --chown=$NB_USER:$NB_GID Anaconda3-5.2.0-Linux-x86_64.sh /tmp/Anaconda3-5.2.0-Linux-x86_64.sh
+# RUN bash /tmp/Anaconda3-5.2.0-Linux-x86_64.sh -f -b -p $CONDA_DIR && \
+#     echo ". /opt/conda/etc/profile.d/conda.sh" >> /home/$NB_USER/.bashrc && \
+#     echo "conda activate base" >> /home/$NB_USER/.bashrc && \
+#     rm -f /tmp/Anaconda3-5.2.0-Linux-x86_64.sh && \
+#     rm -rf /home/$NB_USER/.cache/yarn && \ 
+#     fix-permissions $CONDA_DIR && \
+#     fix-permissions /home/$NB_USER
+    
+# ln -s /opt/conda/etc/profile.d/conda.sh /etc/profile.d/conda.sh && \
+RUN wget --quiet https://repo.anaconda.com/archive/Anaconda3-5.2.0-Linux-x86_64.sh -O /tmp/anaconda.sh && \
+    /bin/bash /tmp/anaconda.sh -f -b -p /opt/conda && \
+    rm -f /tmp/anaconda.sh && \    
+    echo "export LD_LIBRARY_PATH=/usr/local/cuda/extras/CUPTI/lib64:/usr/local/cuda/lib64:$LD_LIBRARY_PATH" >> /home/$NB_USER/.bashrc && \
+    echo "export PATH=$JAVA_HOME/bin:$ORACLE_HOME/bin:$PATH" >> /home/$NB_USER/.bashrc && \
+    echo ". /opt/conda/etc/profile.d/conda.sh" >> /home/$NB_USER/.bashrc && \    
+    echo "conda activate base" >> /home/$NB_USER/.bashrc && \
+    fix-permissions $CONDA_DIR && \
+    fix-permissions /home/$NB_USER
+
+ADD connector/dbi.py /opt/conda/lib/python3.6/site-packages/shcard/
+
+# ==================================================================
+# Hive/impala, odbc connector
+# ------------------------------------------------------------------
+RUN conda install --yes --quiet  \
+        thrift \
+        thrift_sasl \
+        && \
+    conda clean -tipsy && \
+    rm -rf /home/$NB_USER/.cache/yarn && \
+    fix-permissions $CONDA_DIR && \
+    fix-permissions /home/$NB_USER
+
+RUN pip install --quiet --no-cache-dir \
+        thriftpy \
+        PyHive \
+        impala \
+        pyodbc 
+
+USER root
+
+# Set up our notebook config.
+COPY  jupyter_notebook_config.py /etc/jupyter/
+COPY  notebooks /home/$NB_USER/notebooks/samples/
+COPY  run_jupyter.sh /usr/local/bin/
+RUN chown -R $NB_USER:$NB_UID /home/$NB_USER/notebooks/samples && \
+    fix-permissions /etc/jupyter/ && fix-permissions /home/$NB_USER/notebooks/samples
+
+EXPOSE 8888 6006
+
+
+CMD [ "/usr/local/bin/run_jupyter.sh", "--no-browser", "--ip=0.0.0.0", "--allow-root", "--NotebookApp.token="]
+
+USER $NB_UID

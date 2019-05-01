@@ -1,0 +1,99 @@
+apiVersion: v1
+kind: Secret
+metadata:  
+  name: datalake  
+data:
+  ip: MTA0LjI1MS4yMTIuMTky
+  port: MTAwMDA=
+  uid: YWRtaW4=
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: rstudio-admin
+  namespace: default
+data:
+  odbc.ini: |
+    [ODBC Data Sources]
+    HiveDSN=Cloudera ODBC Driver for Apache Hive 64-bit
+    [HiveDSN]
+    Description=Cloudera ODBC Driver for Apache Hive (64-bit) DSN
+    Driver=/opt/cloudera/hiveodbc/lib/64/libclouderahiveodbc64.so
+    HOST=104.251.212.192
+    PORT=10000
+    UID=admin
+    Schema=default
+    ServiceDiscoveryMode=0
+    ZKNamespace=
+    HiveServerType=2
+    AuthMech=2
+    ThriftTransport=1
+    UseNativeQuery=0
+    rbHostFQDN=_HOST
+    KrbServiceName=hive
+    KrbRealm=
+    SSL=0
+    ClientCert=
+    ClientPrivateKey=
+    ClientPrivateKeyPassword=
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: rstudio-u1
+spec:
+  selector:
+    app: rstudio-u1
+  type: NodePort
+  ports:
+    - port: 8787
+  
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: rstudio-u1
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: rstudio-u1
+  template:
+    metadata:
+      labels:
+        app: rstudio-u1
+    spec:
+      containers:
+      - name: rstudio
+        image: "localhost:5000/rstudo:cpu"        
+        resources:
+          requests:
+            cpu: 1
+            memory: 128Mi
+          limits:
+            cpu: 2
+            memory: 512Mi
+        volumeMounts:
+        - name: odbc
+          mountPath: /etc/odbc.ini
+          subPath: odbc.ini
+          readOnly: true
+        - name: odbc
+          mountPath: /home/rstudio/.odbc.ini
+          subPath: odbc.ini
+          readOnly: true
+        - name: datalake
+          mountPath: /etc/datalake          
+          readOnly: true
+        env:
+        - name: PASSWORD
+          value: "hpinvent1!"        
+      volumes:
+      - name: odbc
+        configMap:
+          name: rstudio-admin
+      - name: datalake
+        secret:
+          secretName: datalake

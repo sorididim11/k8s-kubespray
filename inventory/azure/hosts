@@ -1,0 +1,17 @@
+k8s-m0 ansible_host=10.10.1.4 ip=10.10.1.4
+k8s-s0 ansible_host=10.10.2.4 ip=10.10.2.4
+k8s-s1 ansible_host=10.10.2.5 ip=10.10.2.5 
+
+[kube-master]
+k8s-m0
+
+[etcd]
+k8s-m0
+
+[kube-node]
+k8s-s0
+k8s-s1
+
+[k8s-cluster:children]
+kube-master
+kube-node

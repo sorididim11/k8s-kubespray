@@ -1,0 +1,24 @@
+---
+
+s1:
+   name: k8s-02
+   ip: 10.0.35.31
+   cpus: 2
+   mem: 3000
+   type: kube-node
+
+s2:
+   name: k8s-03
+   ip: 10.0.35.32
+   cpus: 2
+   mem: 3000
+   type: kube-node
+
+
+m1:
+   name: k8s-01
+   ip: 10.0.35.21
+   cpus: 2
+   mem: 3000
+   type: kube-master,etcd
+

@@ -1,0 +1,37 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: kubia
+spec:
+  replicas: 3                     
+  template:
+    metadata:
+      name: kubia
+      labels:
+        app: kubia
+    spec:
+      containers:
+      - image: luksa/kubia:v1     
+        name: nodejs
+        resources:              
+          requests:             
+            cpu: 100m     
+
+---
+
+apiVersion: autoscaling/v2beta1            
+kind: HorizontalPodAutoscaler              
+metadata:
+  name: kubia                              
+spec:
+  maxReplicas: 5                           
+  metrics:                                 
+  - resource:                              
+      name: cpu                            
+      targetAverageUtilization: 30         
+    type: Resource                         
+  minReplicas: 1                           
+  scaleTargetRef:                          
+    apiVersion: extensions/v1beta1         
+    kind: Deployment                       
+    name: kubia  

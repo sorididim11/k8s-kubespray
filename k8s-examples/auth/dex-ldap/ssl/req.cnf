@@ -1,0 +1,16 @@
+[req]
+req_extensions = v3_req
+distinguished_name = req_distinguished_name
+
+[req_distinguished_name]
+
+[ v3_req ]
+basicConstraints = CA:FALSE
+keyUsage = nonRepudiation, digitalSignature, keyEncipherment
+subjectAltName = @alt_names
+
+[alt_names]
+DNS.1 = dex.auth.svc.cluster.local
+DNS.2 = login.auth.svc.cluster.local
+DNS.3 = login.k8s.example.org
+DNS.4 = dex.k8s.example.org

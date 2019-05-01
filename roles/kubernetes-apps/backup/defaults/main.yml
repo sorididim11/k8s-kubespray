@@ -1,0 +1,9 @@
+etcd_namespace: kube-system
+etcd_storage_class: ""
+etcd_disk_size: ""
+# if etcd_storage_class is none, then hostpath is used
+etcd_backup_path: /var/backup
+
+etcd_master_node: "{{ groups['kube-master'][0] }}"
+
+etcd_backup_schedule: "* 0 * * *"

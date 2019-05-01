@@ -1,0 +1,16 @@
+k8s-02 ansible_host=10.0.35.31 ip=10.0.35.31
+k8s-03 ansible_host=10.0.35.32 ip=10.0.35.32
+k8s-01 ansible_host=10.0.35.21 ip=10.0.35.21
+[kube-master]
+k8s-01
+
+[etcd]
+k8s-01
+
+[kube-node]
+k8s-02
+k8s-03
+
+[k8s-cluster:children]
+kube-master
+kube-node

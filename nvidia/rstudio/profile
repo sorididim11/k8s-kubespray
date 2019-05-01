@@ -1,0 +1,5 @@
+export ORACLE_HOME=/usr/lib/oracle/12.2/client64
+export JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64
+export PATH=$PATH:$ORACLE_HOME/bin:$JAVA_HOME/bin
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$ORACLE_HOME/lib
+export LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libodbcinst.so

@@ -1,0 +1,24 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-deny
+spec:
+  podSelector: 
+
+
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: postgres-netpolicy
+spec:
+  podSelector:                       1
+    matchLabels:                     1
+      app: database                  1
+  ingress:                           2
+  - from:                            2
+    - podSelector:                   2
+        matchLabels:                 2
+          app: webserver             2
+    ports:                           3
+    - port: 5432                     3

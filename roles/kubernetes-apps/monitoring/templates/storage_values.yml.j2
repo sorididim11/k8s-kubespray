@@ -1,0 +1,25 @@
+alertmanager:
+  storageSpec:
+    volumeClaimTemplate:
+      metadata:
+        name: alertmanage-kube-prometheus-db
+      spec:
+        storageClassName: "{{monitoring_storage_class}}"
+        resources:
+          requests:
+            storage: "{{monitoring_storage_volume_size}}"
+        accessModes:
+        - ReadWriteOnce
+
+prometheus:
+  storageSpec:
+    volumeClaimTemplate:
+      metadata:
+        name: prometheus-kube-prometheus-db
+      spec:
+        storageClassName: "{{monitoring_storage_class}}"
+        resources:
+          requests:
+            storage: "{{monitoring_storage_volume_size}}"
+        accessModes:
+        - ReadWriteOnce

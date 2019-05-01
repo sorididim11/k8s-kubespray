@@ -1,0 +1,43 @@
+apiVersion: apiextensions.k8s.io/v1beta1       
+kind: CustomResourceDefinition                 
+metadata:
+  name: websites.extensions.example.com        
+spec:
+  scope: Namespaced                            
+  group: extensions.example.com                
+  version: v1                                  
+  names:                                       
+    kind: Website                              
+    singular: website                          
+    plural: websites                           
+
+
+---
+apiVersion: apps/v1beta1
+kind: Deployment
+metadata:
+  name: website-controller
+spec:
+  replicas: 1                                        
+  template:
+    metadata:
+      name: website-controller
+      labels:
+        app: website-controller
+    spec:
+      serviceAccountName: website-controller         
+      containers:                                    
+      - name: main                                   
+        image: luksa/website-controller              
+      - name: proxy                                  
+        image: luksa/kubectl-proxy:1.6.2             
+
+
+---
+apiVersion: extensions.example.com/v1         
+kind: Website                                 
+metadata:
+  name: kubia                                 
+spec:
+  gitRepo: https://github.com/luksa/kubia-website-example.git
+

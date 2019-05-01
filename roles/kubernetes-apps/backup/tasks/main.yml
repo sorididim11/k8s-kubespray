@@ -1,0 +1,43 @@
+---
+- debug:
+    msg: "etcd_storage_class: {{ etcd_storage_class }}"
+    
+
+- name: Etcd | Create PVC manifests
+  template:
+    src: "etcd-backup-pvc.yml.j2"
+    dest: "{{ kube_config_dir }}/etcd-backup-pvc.yml"  
+  when:
+    - etcd_storage_class != ""
+    - etcd_disk_size != ""
+    - inventory_hostname == groups['kube-master'][0]
+
+- name: Etcd | Apply PVC manifests
+  kube:
+    name: etcd-backup
+    namespace: kube-system
+    kubectl: "{{ bin_dir }}/kubectl"
+    resource: pvc
+    filename: "{{ kube_config_dir }}/etcd-backup-pvc.yml"
+    state: "latest"  
+  when:
+    - etcd_storage_class != ""
+    - etcd_disk_size != ""
+    - inventory_hostname == groups['kube-master'][0]
+
+- name: Etcd | Create manifest for etcd backup
+  template:
+    src: "etcd-backup-cronjob.yml.j2"
+    dest: "{{ kube_config_dir }}/etcd-backup-cronjob.yml"  
+  when: inventory_hostname == groups['kube-master'][0]
+
+
+- name: Etcd | Apply manifests
+  kube:
+    name: etcd-backup
+    namespace: kube-system
+    kubectl: "{{ bin_dir }}/kubectl"
+    resource: cronjob
+    filename: "{{ kube_config_dir }}/etcd-backup-cronjob.yml"
+    state: "latest"  
+  when: inventory_hostname == groups['kube-master'][0]

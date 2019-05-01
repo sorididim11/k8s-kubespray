@@ -1,0 +1,6 @@
+nfs_client_provisioner_namespace: "kube-system"
+nfs_client_provisioner_name: "nfs-cli/ifs"
+nfs_server: <ip>
+nfs_path: <path>
+
+nfs-cli-reclaim-policy: Retain # Delete 

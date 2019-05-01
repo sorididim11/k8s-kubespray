@@ -1,0 +1,122 @@
+ARG  ROOT_IMAGE=ufoym/deepo:all-py36-jupyter
+ARG VERSION
+
+FROM $ROOT_IMAGE
+
+ARG VERSION
+LABEL version=$VERSION
+
+USER root
+
+ADD fix-permissions /usr/local/bin/fix-permissions
+
+# ==================================================================
+# Unixodbc & clouder hive/impla odbc 
+# ------------------------------------------------------------------
+RUN  apt-get update && apt-get install -y  locales curl wget vim openjdk-8-jdk unixodbc unixodbc-dev alien libaio1 libaio-dev sudo && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
+RUN echo "en_US.UTF-8 UTF-8" > /etc/locale.gen && \
+    locale-gen
+
+RUN  TINI_VERSION=`curl https://github.com/krallin/tini/releases/latest | grep -o "/v.*\"" | sed 's:^..\(.*\).$:\1:'` && \
+    curl -L "https://github.com/krallin/tini/releases/download/v${TINI_VERSION}/tini_${TINI_VERSION}.deb" > tini.deb && \
+    dpkg -i tini.deb && \
+    rm tini.deb && \
+    apt-get clean
+
+
+COPY cloudera/ /data/
+COPY oracle/ /data/
+COPY odbcinst.ini /etc/odbcinst.ini
+COPY odbc.ini /etc/odbc.ini
+
+
+
+RUN apt-get install -y -f /data/clouderahiveodbc_2.5.25.1020-2_amd64.deb && \
+    apt-get install -y -f /data/clouderaimpalaodbc_2.5.42.1031-2_amd64.deb && \
+    rm -rf /opt/cloudera/hiveodbc/lib/64/cloudera.hiveodbc.ini && \
+    rm -rf /opt/cloudera/hiveodbc/lib/64/cloudera.impalaodbc.ini && \
+    cp /data/cloudera.*.ini /etc/ && \
+    cp /data/HiveJDBC41.jar /data/ImpalaJDBC41.jar /usr/lib/jvm/java-8-openjdk-amd64/jre/lib/ext
+    
+
+
+
+# ==================================================================
+# Oracle sqlplus & odbc extension
+# ------------------------------------------------------------------
+
+RUN alien -i /data/oracle-instantclient12.2-basic-12.2.0.1.0-1.x86_64.rpm && \
+    alien -i /data/oracle-instantclient12.2-sqlplus-12.2.0.1.0-1.x86_64.rpm && \
+    alien -i /data/oracle-instantclient12.2-devel-12.2.0.1.0-1.x86_64.rpm && \
+    alien -i /data/oracle-instantclient12.2-odbc-12.2.0.1.0-2.x86_64.rpm && \
+    alien -i /data/oracle-instantclient12.2-jdbc-12.2.0.1.0-1.x86_64.rpm && \
+    cp /usr/lib/oracle/12.2/client64/lib/ojdbc8.jar /usr/lib/jvm/java-8-openjdk-amd64/jre/lib/ext
+
+
+ENV JAVA_HOME       /usr/lib/jvm/java-8-openjdk-amd64
+ENV ORACLE_HOME     /usr/lib/oracle/12.2/client64
+ENV PATH            $JAVA_HOME/bin:$ORACLE_HOME/bin:$PATH
+ENV LD_LIBRARY_PATH /usr/lib/x86_64-linux-gnu:$ORACLE_HOME/lib
+ENV LD_PRELOAD /usr/lib/x86_64-linux-gnu/libodbcinst.so
+
+COPY oracle/tnsnames.ora $ORACLE_HOME/network/admin/
+
+# ==================================================================
+#  JDBC CLI client
+# ------------------------------------------------------------------
+COPY connector/datalake.properties /etc/datalake/datalake.properties
+COPY connector/JdbcClient.java /usr/local/bin/
+COPY connector/jdbc-cli /usr/local/bin
+ADD connector/dbi.py /usr/local/lib/python3.6/dist-packages/shcard/   
+
+RUN javac /usr/local/bin/JdbcClient.java && \
+    chmod 755 /usr/local/bin/jdbc-cli && \
+    chmod 777 /etc/datalake/datalake.properties
+# ==================================================================
+# User, Home, UID/GID
+# ------------------------------------------------------------------
+
+
+ENV CONDA_DIR=/opt/conda \    
+    NB_USER=jovyan \
+    HOME=/home/jovyan \
+    NB_UID=1000 \
+    NB_GID=100 
+
+RUN useradd -m -s /bin/bash -N -u $NB_UID $NB_USER && \
+    mkdir -p $CONDA_DIR && \
+    chown $NB_USER:$NB_GID $CONDA_DIR && \
+    chmod g+w /etc/passwd /etc/group && \
+    rm -rf /home/$NB_USER/.rpmdb && \
+    fix-permissions $CONDA_DIR  && \
+    fix-permissions $HOME
+
+# Setup work directory for backward-compatibility
+USER $NB_UID
+
+ENV SHELL=/bin/bash
+
+RUN mkdir /home/$NB_USER/notebooks && \
+    cp $ORACLE_HOME/network/admin/tnsnames.ora /home/$NB_USER/.tnsnames.ora && \
+    cp /etc/odbc.ini /home/$NB_USER/.odbc.ini && \
+    echo "export LD_LIBRARY_PATH=/usr/local/cuda/extras/CUPTI/lib64:/usr/local/cuda/lib64:/usr/lib/x86_64-linux-gnu:$ORACLE_HOME/lib" >> /home/$NB_USER/.bashrc && \
+    echo "export PATH=$JAVA_HOME/bin:$ORACLE_HOME/bin:$PATH" >> /home/$NB_USER/.bashrc && \
+    fix-permissions /home/$NB_USER     
+
+
+USER root
+
+COPY  jupyter_notebook_config.py /etc/jupyter/
+COPY  notebooks /home/$NB_USER/notebooks/samples/
+COPY  run_jupyter.sh /usr/local/bin/
+
+WORKDIR /home/$NB_USER
+COPY entrypoint.sh /usr/local/bin/
+ENTRYPOINT [ "/usr/bin/tini", "--", "entrypoint.sh"]
+CMD [ "/usr/local/bin/run_jupyter.sh", "--no-browser", "--ip=0.0.0.0", "--allow-root", "--NotebookApp.token="]
+
+USER $NB_UID
+#RUN fix-permissions /home/$NB_USER

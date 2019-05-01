@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dep-cofmap
+spec:
+  selector:
+    matchLabels:
+      app: my-config-app
+  template:
+    metadata:
+      labels:
+        app: my-config-app
+    spec:
+      containers:
+      - name: container1
+        image: gcr.io/kuar-demo/kuard-amd64:1
+        imagePullPolicy: Always
+        command: 
+          - "/kuard"
+          - $(EXTRA_PARAM_FROM_CONFIGMAP)
+        env:
+          - name: FIRST_PARAM_FROM_CONFIGMAP
+            valueFrom:
+              configMapKeyRef:
+                name: my-config
+                key: my-config.txt
+          - name: EXTRA_PARAM_FROM_CONFIGMAP
+            valueFrom:
+              configMapKeyRef:
+                name: my-config
+                key: my-config.txt
+        volumeMounts:
+          - name: config-volume
+            mountPath: /config
+      volumes:
+        - name: config-volume
+          configMap:
+            name: my-config
+              

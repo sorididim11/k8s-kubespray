@@ -1,0 +1,30 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: hobby-job
+  labels:
+    app: hobby-job
+spec:
+  backoffLimit: 1
+  template:
+    metadata:
+      labels:
+        app: hobby-job
+    spec:
+      containers:
+        - name: hobby
+          image: "localhost:5000/hobby-lab:cpu"          
+          args: ["python", "/data/test.py"]
+          env:
+          - name: NB_UID
+            value: "3001"
+          - name: NB_GID
+            value: "3001"
+          volumeMounts:
+          - name: anaconda
+            mountPath: /data
+      volumes:
+      - name: anaconda
+        hostPath:
+          path: /data
+      restartPolicy: OnFailure
