@@ -106,19 +106,9 @@ resource "null_resource" "k8s_build_cluster" {
     }
   }
 
-#  provisioner "local-exec" {
-#     command = "cp ${var.ansible_inventory_home}/ansible.cfg ${var.ansible_inventory_home}/../ansible.cfg"
-#   }
-
-  //run ansible
-  # provisioner "local-exec" {
-  #   command = "ANSIBLE_CONFIG=${var.ansible_inventory_home}/ansible.cfg ansible-playbook --vault-password-file=../../password ../../site.yml --become"
-  # }
-
-
-  # provisioner "local-exec" {
-  #   when    = "destroy"
-  #   command = "ANSIBLE_CONFIG=${var.ansible_inventory_home}/ansible.cfg ansible-playbook --extra-vars is_register=false --vault-password-file=../../password ../../util-redhat-subscription.yml --become"
-  # }
+  provisioner "remote-exec" {
+    when    = "destroy"
+    command = "ANSIBLE_CONFIG=k8s-kubespray/inventory/azure/ansible.cfg ansible-playbook --extra-vars is_register=false --vault-password-file=k8s-kubespray/password k8s-kubespray/util-redhat-subscription.yml --become"
+  }
   
 }
