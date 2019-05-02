@@ -51,37 +51,34 @@ resource "null_resource" "ansible_host_provision" {
   }
 }
 
+resource "local_file" "ansible_inventory" {
+  depends_on = ["azurerm_virtual_machine.k8s-master-vm", "azurerm_virtual_machine.k8s-node-vm", "null_resource.ansible_host_provision"]
+  filename = "../../inventory/azure/hosts"
+  content =  <<EOF
+${join("\n", formatlist("%s ansible_host=%s ip=%s", azurerm_virtual_machine.k8s-master-vm.*.name , azurerm_network_interface.k8s-master-nic.*.private_ip_address, azurerm_network_interface.k8s-master-nic.*.private_ip_address))}
+${join("\n", formatlist("%s ansible_host=%s ip=%s", azurerm_virtual_machine.k8s-node-vm.*.name, azurerm_network_interface.k8s-slave-nic.*.private_ip_address, azurerm_network_interface.k8s-slave-nic.*.private_ip_address ))}
+
+[kube-master]
+${join("\n",azurerm_virtual_machine.k8s-master-vm.*.name )}
+
+[etcd]
+${join("\n",azurerm_virtual_machine.k8s-master-vm.*.name)}
+
+[kube-node]
+${join("\n",azurerm_virtual_machine.k8s-node-vm.*.name)}
+  
+[k8s-cluster:children]
+kube-master
+kube-node
+EOF
+}
+
 
 resource "null_resource" "k8s_build_cluster" {
   count = 1
-  depends_on = ["azurerm_virtual_machine.k8s-master-vm", "azurerm_virtual_machine.k8s-node-vm", "null_resource.ansible_host_provision"]
+  depends_on = ["local_file.ansible_inventory"]
   triggers = {
-    trigger1 = "${var.num_masters}"
-    trigger2 = "${var.num_slaves}"
-  }
-
-  provisioner "local-exec" {
-    command = "echo '${join("\n", formatlist("%s ansible_host=%s ip=%s", azurerm_virtual_machine.k8s-master-vm.*.name , azurerm_network_interface.k8s-master-nic.*.private_ip_address, azurerm_network_interface.k8s-master-nic.*.private_ip_address))}' > ${var.ansible_inventory_home}/hosts"
-  }
-
- provisioner "local-exec" {
-    command = "echo '${join("\n", formatlist("%s ansible_host=%s ip=%s", azurerm_virtual_machine.k8s-node-vm.*.name, azurerm_network_interface.k8s-slave-nic.*.private_ip_address, azurerm_network_interface.k8s-slave-nic.*.private_ip_address ))} \n' >> ${var.ansible_inventory_home}/hosts"
-  }
-
-  provisioner "local-exec" {
-    command = "echo '[kube-master]\n${join("\n",azurerm_virtual_machine.k8s-master-vm.*.name )}\n' >> ${var.ansible_inventory_home}/hosts"
-  }
-
-  provisioner "local-exec" {
-    command = "echo '[etcd]\n${join("\n",azurerm_virtual_machine.k8s-master-vm.*.name)}\n' >> ${var.ansible_inventory_home}/hosts"
-  }
-
-  provisioner "local-exec" {
-    command = "echo '[kube-node]\n${join("\n",azurerm_virtual_machine.k8s-node-vm.*.name)}\n' >> ${var.ansible_inventory_home}/hosts"
-  }
-
-  provisioner "local-exec" {
-    command = "echo '[k8s-cluster:children]\nkube-master\nkube-node' >> ${var.ansible_inventory_home}/hosts"
+    content = "${local_file.ansible_inventory.content}"
   }
 
 # copy host file to ansible host, master[0]

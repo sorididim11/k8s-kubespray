@@ -1,5 +1,5 @@
-resource "azurerm_availability_set" "k8s-agent-as" {
-  name                = "kubespray-agent-as"
+resource "azurerm_availability_set" "k8s-node-as" {
+  name                = "k8s-node-as"
   location            = "${var.location}"
   resource_group_name = "${azurerm_resource_group.k8sgroup.name}"
   managed                      = "true"
@@ -70,7 +70,7 @@ resource "azurerm_virtual_machine" "k8s-node-vm" {
 	location = "${var.location}"
 	
 	resource_group_name = "${azurerm_resource_group.k8sgroup.name}"
-    availability_set_id = "${azurerm_availability_set.k8s-agent-as.id}"
+    availability_set_id = "${azurerm_availability_set.k8s-node-as.id}"
 
     network_interface_ids = [
       "${element(azurerm_network_interface.k8s-slave-nic.*.id, count.index)}",

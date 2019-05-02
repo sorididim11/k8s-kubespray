@@ -54,7 +54,7 @@ resource "azurerm_network_security_group" "k8s-master-nsg" {
 
 resource "azurerm_network_interface" "k8s-master-nic" {
   count = "${var.num_masters}"
-	name = "k8s-nic-${count.index}"
+	name = "k8s-master-nic-${count.index}"
 	location = "${var.location}"
 	resource_group_name = "${azurerm_resource_group.k8sgroup.name}"
 	network_security_group_id = "${azurerm_network_security_group.k8s-master-nsg.id}"
@@ -110,7 +110,7 @@ resource "azurerm_virtual_machine" "k8s-master-vm" {
 	vm_size = "${var.master_vm_size}"
 
 	storage_os_disk {
-		name = "myOsDisk${count.index}"
+		name = "masterOsDisk${count.index}"
 		caching = "ReadWrite"
 		create_option = "FromImage"
 		managed_disk_type = "Premium_LRS"
