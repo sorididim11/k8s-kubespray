@@ -46,11 +46,7 @@ resource "null_resource" "ansible_host_provision" {
     ]
   }
 
-# copy local vars, host file to ansible host, master[0]
-  provisioner "file" {
-    source      = "../../inventory/azure/"
-    destination = "/home/${var.admin_username}/k8s-kubespray/inventory/azure"
-  }
+
 
 # copy vault file for redhat subscription to ansible host, master[0]
   provisioner "file" {
@@ -93,6 +89,19 @@ resource "null_resource" "k8s_build_cluster" {
     command = "echo '[k8s-cluster:children]\nkube-master\nkube-node' >> ${var.ansible_inventory_home}/hosts"
   }
 
+
+# copy host file to ansible host, master[0]
+  provisioner "file" {
+    source      = "${var.ansible_inventory_home}/hosts"
+    destination = "/home/${var.admin_username}/k8s-kubespray/inventory/azure/hosts"
+    connection {
+      user = "${var.admin_username}"
+      host = "${azurerm_public_ip.k8s-master-publicip.ip_address}"
+      port =  "2221"
+      private_key = "${tls_private_key.ansible_key.private_key_pem}"
+    }
+  }
+
 # copy private key to master[0] for ansible
 
   provisioner "remote-exec" {
@@ -106,9 +115,9 @@ resource "null_resource" "k8s_build_cluster" {
     }
   }
 
-  provisioner "remote-exec" {
-    when    = "destroy"
-    command = "ANSIBLE_CONFIG=k8s-kubespray/inventory/azure/ansible.cfg ansible-playbook --extra-vars is_register=false --vault-password-file=k8s-kubespray/password k8s-kubespray/util-redhat-subscription.yml --become"
-  }
+  # provisioner "remote-exec" {
+  #   when    = "destroy"
+  #   inline = ["ANSIBLE_CONFIG=k8s-kubespray/inventory/azure/ansible.cfg ansible-playbook --extra-vars is_register=false --vault-password-file=k8s-kubespray/password k8s-kubespray/util-redhat-subscription.yml --become"]
+  # }
   
 }

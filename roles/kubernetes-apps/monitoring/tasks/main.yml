@@ -18,6 +18,17 @@
   - prometheus-operator-0.0.29.tgz 
   - kube-prometheus-0.0.105-gpu.tgz
       
+# - name: Is prometheus installed
+#   shell: /usr/local/bin/helm ls --all prometheus-operator -q
+#   register: is_prometheus_installed
+
+- name: Remove prometheus operator charts
+  shell: "/usr/local/bin/helm del --purge {{ item }}"
+  ignore_errors: True
+  with_items:
+  - prometheus-operator
+  - kube-prometheus
+  
 
 
 - name: Install prometheus operator chart
@@ -29,3 +40,4 @@
   retries: 10
   delay: 60
   until: tiller_ready.rc == 0
+#  when: is_prometheus_installed == ""
