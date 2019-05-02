@@ -7,7 +7,6 @@ variable "client_secret" {}
 
 variable "tenant_id" {}
 
-variable "region" {}
 
 variable "resource_name_prefix" {
   default = "k8s"
@@ -32,13 +31,6 @@ variable "api_loadbalancer_backend_port" {
   default = "443"
 }
 
-
-variable "host_image" { 
-	default = "ITIO CentOS-7" 
-}
-variable "bootstrap_flavor" { default = "Compute1.small" }
-variable "master_flavor" { default = "Compute1.medium" }
-variable "agent_flavor" { default = "General1.large" }
 
 # Number of linux instances to create
 variable "num_slaves" { default = "2" }

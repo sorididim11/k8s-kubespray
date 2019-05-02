@@ -53,25 +53,35 @@ resource "azurerm_network_security_group" "k8s-master-nsg" {
 
 
 resource "azurerm_network_interface" "k8s-master-nic" {
-    count = "${var.num_masters}"
+  count = "${var.num_masters}"
 	name = "k8s-nic-${count.index}"
 	location = "${var.location}"
 	resource_group_name = "${azurerm_resource_group.k8sgroup.name}"
 	network_security_group_id = "${azurerm_network_security_group.k8s-master-nsg.id}"
 
   ip_configuration {
-    name                                    = "${var.resource_name_prefix}-master-nic-ipconfig"
+    name                                    = "${var.resource_name_prefix}-master-nic-ipconfig-${count.index}"
     subnet_id                               = "${azurerm_subnet.k8s-master-subnet.id}"
     private_ip_address_allocation           = "dynamic"
-    load_balancer_backend_address_pools_ids = ["${azurerm_lb_backend_address_pool.k8s-master-lb-bepool.id}"]
-    load_balancer_inbound_nat_rules_ids     = ["${element(azurerm_lb_nat_rule.ssh-master-nat.*.id, count.index)}"]
   }
 	tags {
 		environment = "k8s-test" 
 	}
 }
 
+resource "azurerm_network_interface_backend_address_pool_association" "nic-address-pool-assoc" {
+  count = "${var.num_masters}" 
+  network_interface_id    = "${element(azurerm_network_interface.k8s-master-nic.*.id, count.index)}"
+  ip_configuration_name   = "${var.resource_name_prefix}-master-nic-ipconfig-${count.index}"
+  backend_address_pool_id = "${azurerm_lb_backend_address_pool.k8s-master-lb-bepool.id}"
+}
 
+resource "azurerm_network_interface_nat_rule_association" "nic-nat-rule-assoc" {
+  count = "${var.num_masters}" 
+  network_interface_id    = "${element(azurerm_network_interface.k8s-master-nic.*.id, count.index)}"
+  ip_configuration_name = "${var.resource_name_prefix}-master-nic-ipconfig-${count.index}"
+  nat_rule_id           = "${element(azurerm_lb_nat_rule.ssh-master-nat.*.id, count.index)}"
+}
 
 
 resource "azurerm_storage_account" "k8s-storage-account" {

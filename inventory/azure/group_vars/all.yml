@@ -72,7 +72,6 @@ bin_dir: /usr/local/bin
 cloud_provider: azure
 
 azure_resource_group: "k8s"
-azure_location: "westus"
 azure_subnet_name:  
   - "k8s-node-subnet"
   - "k8s-master-subnet"

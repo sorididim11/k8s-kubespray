@@ -16,7 +16,6 @@ resource "null_resource" "ansible_pem_permission" {
 }
 
 
-
 resource "null_resource" "ansible_host_provision" {
   count = 1
   depends_on = ["azurerm_virtual_machine.k8s-master-vm"]
@@ -34,7 +33,6 @@ resource "null_resource" "ansible_host_provision" {
     destination = "/home/${var.admin_username}/.ssh/id_rsa"
   }
 
-
 # install kubespary 's requried pkgs and clone code from github
   provisioner "remote-exec" {
     inline = [ 
@@ -46,14 +44,13 @@ resource "null_resource" "ansible_host_provision" {
     ]
   }
 
-
-
 # copy vault file for redhat subscription to ansible host, master[0]
   provisioner "file" {
     source      = "../../password"
     destination = "/home/${var.admin_username}/k8s-kubespray/password"
   }
 }
+
 
 resource "null_resource" "k8s_build_cluster" {
   count = 1
@@ -63,10 +60,9 @@ resource "null_resource" "k8s_build_cluster" {
     trigger2 = "${var.num_slaves}"
   }
 
- provisioner "local-exec" {
+  provisioner "local-exec" {
     command = "echo '${join("\n", formatlist("%s ansible_host=%s ip=%s", azurerm_virtual_machine.k8s-master-vm.*.name , azurerm_network_interface.k8s-master-nic.*.private_ip_address, azurerm_network_interface.k8s-master-nic.*.private_ip_address))}' > ${var.ansible_inventory_home}/hosts"
   }
-
 
  provisioner "local-exec" {
     command = "echo '${join("\n", formatlist("%s ansible_host=%s ip=%s", azurerm_virtual_machine.k8s-node-vm.*.name, azurerm_network_interface.k8s-slave-nic.*.private_ip_address, azurerm_network_interface.k8s-slave-nic.*.private_ip_address ))} \n' >> ${var.ansible_inventory_home}/hosts"
@@ -84,11 +80,9 @@ resource "null_resource" "k8s_build_cluster" {
     command = "echo '[kube-node]\n${join("\n",azurerm_virtual_machine.k8s-node-vm.*.name)}\n' >> ${var.ansible_inventory_home}/hosts"
   }
 
-
   provisioner "local-exec" {
     command = "echo '[k8s-cluster:children]\nkube-master\nkube-node' >> ${var.ansible_inventory_home}/hosts"
   }
-
 
 # copy host file to ansible host, master[0]
   provisioner "file" {
@@ -103,9 +97,8 @@ resource "null_resource" "k8s_build_cluster" {
   }
 
 # copy private key to master[0] for ansible
-
   provisioner "remote-exec" {
-    inline = [ "ANSIBLE_CONFIG=k8s-kubespray/inventory/azure/ansible.cfg ansible-playbook --vault-password-file=k8s-kubespray/password k8s-kubespray/site.yml --become --extra-vars 'azure_subscription_id=${var.subscription_id} azure_tenant_id=${var.tenant_id} azure_aad_client_id=${var.client_id} azure_aad_client_secret=${var.client_secret}'"]
+    inline = [ "ANSIBLE_CONFIG=k8s-kubespray/inventory/azure/ansible.cfg ansible-playbook --vault-password-file=k8s-kubespray/password k8s-kubespray/site.yml --become --extra-vars 'azure_subscription_id=${var.subscription_id} azure_tenant_id=${var.tenant_id} azure_aad_client_id=${var.client_id} azure_aad_client_secret=${var.client_secret} azure_location=${var.location}'"]
 
     connection {
       user = "${var.admin_username}"
