@@ -75,9 +75,7 @@ azure_resource_group: "k8s"
 azure_subnet_name:  
   - "k8s-node-subnet"
   - "k8s-master-subnet"
-azure_security_group_name: 
-  - "k8s-master-nsg"
-  - "k8s-node-nsg"
+azure_security_group_name: "k8s-node-nsg"
 azure_vnet_name: "k8s-net"
 azure_vnet_resource_group: "k8s"
 azure_route_table_name: "k8s-routetable"

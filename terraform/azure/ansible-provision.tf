@@ -70,6 +70,9 @@ ${join("\n",azurerm_virtual_machine.k8s-node-vm.*.name)}
 [k8s-cluster:children]
 kube-master
 kube-node
+
+[kube-ingress]
+${azurerm_virtual_machine.k8s-node-vm.0.name}
 EOF
 }
 
@@ -78,7 +81,7 @@ resource "null_resource" "k8s_build_cluster" {
   count = 1
   depends_on = ["local_file.ansible_inventory"]
   triggers = {
-    content = "${local_file.ansible_inventory.content}"
+    content = 1#"${local_file.ansible_inventory.content}"
   }
 
 # copy host file to ansible host, master[0]

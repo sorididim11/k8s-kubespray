@@ -24,16 +24,16 @@ variable "node_subnet_cidr" {
 }
 
 variable "api_loadbalancer_frontend_port" {
-  default = "443"
+  default = "6443"
 }
 
 variable "api_loadbalancer_backend_port" {
-  default = "443"
+  default = "6443"
 }
 
 
 # Number of linux instances to create
-variable "num_slaves" { default = "3" }
+variable "num_slaves" { default = "2" }
 variable "num_masters" { default = "1" }
 
 variable "ansible_inventory_home" { default = "../../inventory/azure" }
