@@ -1,0 +1,48 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  namespace: kube-system
+  name: ingress-kube-system
+  annotations:
+    kubernetes.io/ingress.class: "nginx"    
+#    ingress.kubernetes.io/auth-type: basic
+#    ingress.kubernetes.io/auth-secret: "{{ ingress_auth_secret_name }}"
+#    ingress.kubernetes.io/auth-realm: "Authentication Required - foo"
+spec:
+  rules:
+{% if dashboard_enabled %}
+  - host: dashboard.k8s.com
+    http:
+      paths:
+      - path: /
+        backend:
+          serviceName: kubernetes-dashboard
+          servicePort: 9090  
+{% endif %}        
+{% if monitoring_enabled %}
+  - host: monitoring.k8s.com
+    http:
+      paths:
+      - path: /
+        backend:
+          serviceName: kube-prometheus-grafana
+          servicePort: 80
+{% endif %}  
+{% if efk_enabled %}
+  - host: logging.k8s.com
+    http:
+      paths:
+      - backend:
+          serviceName: kibana-logging
+          servicePort: 5601
+        path: /
+{% endif %}  
+{% if registry_enabled %}
+  - host: registry.k8s.com
+    http:
+      paths:
+      - backend:
+          serviceName: registry
+          servicePort: 5000
+        path: /
+{% endif %}  
