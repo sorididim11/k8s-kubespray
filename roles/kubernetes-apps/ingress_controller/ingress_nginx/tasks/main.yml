@@ -25,6 +25,7 @@
     - { name: ingress-nginx-default-backend-svc, file: ingress-nginx-default-backend-svc.yml, type: svc }
     - { name: ingress-nginx-default-backend-rs, file: ingress-nginx-default-backend-rs.yml, type: rs }
     - { name: ingress-nginx-controller-ds, file: ingress-nginx-controller-ds.yml, type: ds }
+    - { name: ingress-nginx-controller-svc, file: ingress-nginx-controller-svc.yml, type: svc }
   register: ingress_nginx_manifests
   when:
     - inventory_hostname == groups['kube-master'][0]

@@ -1,0 +1,20 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: ingress-nginx
+  namespace: {{ ingress_nginx_namespace }}
+spec:
+{% if cloud_provider is defined %}
+  type: LoadBalancer
+{% else %}
+  type: NodePort
+{% endif %}
+  selector:
+    k8s-app: ingress-nginx
+  ports:
+  - name: http
+    port: 80
+    targetPort: http
+  - name: https
+    port: 443
+    targetPort: https
