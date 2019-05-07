@@ -31,6 +31,12 @@
   when:
     - inventory_hostname == groups['kube-master'][0]
 
+- name: " Create namespace for efk {{ monitoring_namespace }}"
+  command: "{{ bin_dir }}/kubectl create ns {{ monitoring_namespace }}"  
+  run_once: true  
+  when:
+    - inventory_hostname == groups['kube-master'][0]
+
 - name: NGINX Ingress Controller | Apply manifests
   kube:
     name: "{{ item.item.name }}"
