@@ -22,6 +22,8 @@
     template:
       src: "roles/kubernetes-apps/templates/ingress.yml.j2"
       dest: "{{ kube_config_dir }}/addons/ingress_nginx/{{ item.file }}"
+    tags:
+      - expose
 
   - name: NGINX Ingress Controller | Apply manifests
     kube:
@@ -30,3 +32,5 @@
       resource: "{{ item.item.type }}"
       filename: "{{ kube_config_dir }}/addons/ingress_nginx/ingress.yml"
       state: "latest"
+    tags:
+      - expose
