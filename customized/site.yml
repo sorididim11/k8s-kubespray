@@ -26,9 +26,7 @@
 
   - name: NGINX Ingress Controller | Apply manifests
     kube:
-      name: "{{ item.item.name }}"
       kubectl: "{{ bin_dir }}/kubectl"
-      resource: "{{ item.item.type }}"
       filename: "{{ kube_config_dir }}/addons/ingress_nginx/ingress.yml"
       state: "latest"
     tags:
