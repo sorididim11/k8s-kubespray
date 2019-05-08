@@ -33,7 +33,7 @@ variable "api_loadbalancer_backend_port" {
 
 
 # Number of linux instances to create
-variable "num_slaves" { default = "2" }
+variable "num_slaves" { default = "1" }
 variable "num_masters" { default = "1" }
 
 variable "ansible_inventory_home" { default = "../../inventory/azure" }
