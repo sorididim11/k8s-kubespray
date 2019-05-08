@@ -1,0 +1,10 @@
+users:
+  - name: shd_001
+    uid: 3001
+    comment: 
+    groups: hive
+    password: Shd_001!
+  - name: shd_002
+    uid: 3002
+    groups: hive
+    password: Shd_002!

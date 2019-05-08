@@ -1,0 +1,22 @@
+- hosts: all
+  # vars_files:
+  #   - ./users.yml
+  tasks:
+    - name: Create group "hive" 
+      group:
+        gid: 3000
+        name: hive
+        state: present
+
+
+    - name: Create users
+      user:
+        name: "shd_{{item}}"
+        uid: "3{{ item }}"
+        state: present
+        comment: "k8s user"
+        password: "Shd_{{ item }}!"
+        update_password: on_create
+        createhome: yes
+        groups: hive      
+      with_sequence: start=1 end=30 format=3%03d

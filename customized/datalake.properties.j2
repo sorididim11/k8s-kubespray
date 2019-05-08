@@ -1,0 +1,13 @@
+# Cloudera Hive Config
+hive.datasource.driver=com.cloudera.hive.jdbc41.HS2Driver
+hive.datasource.url=jdbc:hive2://10.112.11.30:10000/default
+hive.datasource.username=shh_{{ item }}
+hive.datasource.password=Shh_{{ item }}!
+hive.datasource.outdir=/home/jovyan/notebooks/data
+
+# Oracle EDW DB Config
+oracle.datasource.driver=oracle.jdbc.driver.OracleDriver
+oracle.datasource.url=jdbc:oracle:thin:@10.111.42.211:1531/EDWDBP
+oracle.datasource.username=EDWSHR
+oracle.datasource.password=EDWSHR32!
+oracle.datasource.outdir=/home/jovyan/notebooks/data

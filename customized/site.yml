@@ -1,0 +1,32 @@
+
+---
+- hosts: all
+  gather_facts: False
+  tasks:
+    - name: ensure firewalld is stoped and disabled
+      service:
+        name: firewalld
+        enabled: no
+        state: stopped
+
+
+- include: util-redhat-subscription.yml
+# - include: util-config-ohmyzsh.yml
+
+- include: ../cluster.yml
+
+
+- hosts: kube-master[0]
+  gather_facts: False
+  tasks:
+  - name: NGINX Ingress Controller | Create manifests
+    template:
+      src: "./ingress.yml.j2"
+      dest: "{{ kube_config_dir }}/addons/ingress_nginx/ingress.yml"
+
+
+  - name: NGINX Ingress Controller | Apply manifests
+    kube:
+      kubectl: "{{ bin_dir }}/kubectl"
+      filename: "{{ kube_config_dir }}/addons/ingress_nginx/ingress.yml"
+      state: "latest"
