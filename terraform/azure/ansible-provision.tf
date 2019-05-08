@@ -98,7 +98,7 @@ resource "null_resource" "k8s_build_cluster" {
 
 # copy private key to master[0] for ansible
   provisioner "remote-exec" {
-    inline = [ "ANSIBLE_CONFIG=k8s-kubespray/inventory/azure/ansible.cfg ansible-playbook --vault-password-file=k8s-kubespray/password k8s-kubespray/site.yml --become --extra-vars 'azure_subscription_id=${var.subscription_id} azure_tenant_id=${var.tenant_id} azure_aad_client_id=${var.client_id} azure_aad_client_secret=${var.client_secret} azure_location=${var.location}'"]
+    inline = [ "ANSIBLE_CONFIG=k8s-kubespray/inventory/azure/ansible.cfg ansible-playbook --vault-password-file=k8s-kubespray/password k8s-kubespray/customized/site.yml --become --extra-vars 'azure_subscription_id=${var.subscription_id} azure_tenant_id=${var.tenant_id} azure_aad_client_id=${var.client_id} azure_aad_client_secret=${var.client_secret} azure_location=${var.location}'"]
 
     connection {
       user = "${var.admin_username}"
