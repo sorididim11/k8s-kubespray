@@ -14,7 +14,7 @@
 
 - include: ../cluster.yml
 
-- host: kube-master[0]
+- hosts: kube-master[0]
   gather_facts:  False
   tasks:
   - name: NGINX Ingress Controller | Create manifests
