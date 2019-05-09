@@ -19,7 +19,7 @@
   tasks:
   - name: NGINX Ingress Controller | Create manifests
     template:
-      src: "../roles/kubernetes-apps/templates/ingress.yml.j2"
+      src: "../roles/kubernetes-apps/ingress_controller/ingress_nginx/templates/ingress.yml.j2"
       dest: "{{ kube_config_dir }}/addons/ingress_nginx/ingress.yml"
     tags:
       - expose
