@@ -1,6 +1,0 @@
----
-dependencies:
-  - role: download
-    skip_downloads: false
-    tags:
-      - deeplearning

@@ -36,7 +36,7 @@ variable "api_loadbalancer_backend_port" {
 variable "num_slaves" { default = "1" }
 variable "num_masters" { default = "1" }
 
-variable "ansible_inventory_home" { default = "../../inventory/azure" }
+variable "ansible_inventory_home" { default = "../../../inventory/azure" }
 
 
 variable "location" {
