@@ -53,7 +53,7 @@ resource "null_resource" "ansible_host_provision" {
 
 resource "local_file" "ansible_inventory" {
   depends_on = ["azurerm_virtual_machine.k8s-master-vm", "azurerm_virtual_machine.k8s-node-vm", "null_resource.ansible_host_provision"]
-  filename = "../../inventory/azure/hosts"
+  filename = "../../../inventory/azure/hosts"
   content =  <<EOF
 ${join("\n", formatlist("%s ansible_host=%s ip=%s", azurerm_virtual_machine.k8s-master-vm.*.name , azurerm_network_interface.k8s-master-nic.*.private_ip_address, azurerm_network_interface.k8s-master-nic.*.private_ip_address))}
 ${join("\n", formatlist("%s ansible_host=%s ip=%s", azurerm_virtual_machine.k8s-node-vm.*.name, azurerm_network_interface.k8s-slave-nic.*.private_ip_address, azurerm_network_interface.k8s-slave-nic.*.private_ip_address ))}
