@@ -17,14 +17,14 @@
 - hosts: kube-master[0]
   gather_facts:  False
   tasks:
-  - name: NGINX Ingress Controller | Create manifests
+  - name: NGINX Ingress Controller | Create manifests for monitoring, logging, dashboard and registry
     template:
       src: "../roles/kubernetes-apps/ingress_controller/ingress_nginx/templates/ingress.yml.j2"
       dest: "{{ kube_config_dir }}/addons/ingress_nginx/ingress.yml"
     tags:
       - expose
 
-  - name: NGINX Ingress Controller | Apply manifests
+  - name: NGINX Ingress Controller | Apply ingress for for monitoring, logging, dashboard and registry
     kube:
       kubectl: "{{ bin_dir }}/kubectl"
       filename: "{{ kube_config_dir }}/addons/ingress_nginx/ingress.yml"
