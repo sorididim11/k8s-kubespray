@@ -1,0 +1,49 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: cpu-deepo
+spec:
+  selector:
+    app: cpu-deepo
+  type: LoadBalancer
+  ports:
+    - name: spark1
+      port: 31100
+      targetPort: 31100
+      nodePort: 31100
+    - name: jupyter
+      port: 8888
+      targetPort: 8888
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cpu-deepo
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: cpu-deepo
+  template:
+    metadata:
+      labels:
+        app: cpu-deepo
+    spec:
+      containers:
+      - name: cpu-deep-container
+        image: "sorididim11/spark-lab-cpu:1.0.1"
+        command: ["jupyter"]
+        ports:
+        - name: jupyter
+          containerPort: 8888
+        - name: spark1
+          containerPort: 31100
+        args: ["notebook", "--no-browser", "--ip=0.0.0.0", "--allow-root", "--NotebookApp.token="]
+        volumeMounts:
+        - name: spark-conf
+          mountPath: /usr/local/spark/spark.conf
+      volumes:
+        - name: spark-conf
+          hostPath:
+            path: /home/sorididim11/k8s-kubespray/customized/nvidia/spark.conf
