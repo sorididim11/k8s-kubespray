@@ -34,7 +34,7 @@ k8s_addon_home: "{{k8s_data_home}}/addons"
 backup_enabled: true
 etcd_master_node: "{{ groups['kube-master'][0] }}"
 etcd_backup_schedule: "* 0 * * *" # every 12:00 AM
-etcd_storage_class: "managed-nfs-storage"
+etcd_storage_class: "azure-k8s-sc"
 #when use host path instead of persistemvolume for backup, remove etcd_storage class and add etcd_backup path
 etcd_disk_size: 20Gi
 # if etcd_storage_class is none, then hostpath is used
@@ -200,7 +200,7 @@ insecure_dashboard: true
 
 # Monitoring apps for k8s
 efk_enabled: true
-efk_storage_class: "" #"managed-nfs-storage"
+efk_storage_class: "azure-k8s-sc" #"managed-nfs-storage"
 efk_namespace: "logging"
 efk_disk_size: "5Gi"
 
@@ -210,14 +210,14 @@ helm_enabled: true
 #  monitoring deployment depending on helm
 monitoring_enabled: true
 monitoring_namespace: "monitoring"
-monitoring_storage_class: ""
+monitoring_storage_class: "azure-k8s-sc"
 
 # Istio deployment
 istio_enabled: false
 
 # Registry deployment
 registry_enabled: true
-registry_storage_class: "managed-nfs-storage"
+registry_storage_class: "azure-k8s-sc"
 registry_namespace: "kube-system"
 registry_disk_size: "5Gi"
 
