@@ -1,0 +1,15 @@
+# if error happend when creating pvc, use cmds below
+# kubectl create clusterrole system:azure-cloud-provider --verb=get,create --resource=secrets
+# kubectl create clusterrolebinding system:azure-cloud-provider --clusterrole=system:azure-cloud-provider --serviceaccount=kube-system:persistent-volume-binder
+
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mongodb-pvc
+spec:
+  resources:
+    requests:
+      storage: 100Mi
+  accessModes:
+  - ReadWriteOnce
+  storageClassName: myfastsc

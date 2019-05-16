@@ -1,0 +1,29 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: mongodb-pv
+spec: 
+  capacity:
+    storage: 1Gi
+  accessModes:
+  - ReadWriteOnce
+  - ReadOnlyMany
+  persistentVolumeReclaimPolicy: Retain
+  azureDisk:
+    kind: Managed
+    diskName: k8s-static-vol
+    diskURI: "/subscriptions/69978730-9bb4-48d3-b7a6-dc6fabe747d4/resourceGroups/k8s/providers/Microsoft.Compute/disks/k8s-static-vol"
+
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mongodb-pvc
+spec:
+  resources:
+    requests:
+      storage: 1Gi
+  accessModes:
+  - ReadWriteOnce
+  storageClassName: ""
