@@ -1,0 +1,9 @@
+---
+- hosts: all
+  gather_facts: False
+  tasks:
+    - name: ensure firewalld is stoped and disabled
+      service:
+        name: firewalld
+        enabled: no
+        state: stopped

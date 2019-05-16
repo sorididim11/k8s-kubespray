@@ -35,16 +35,3 @@ dependencies:
     tags:
       - apps
       - persistent_volumes
-
-  - role: kubernetes-apps/monitoring
-    when: helm_enabled and monitoring_enabled
-    tags:
-      - apps
-      - monitoring
-      - helm
-
-  - role: kubernetes-apps/backup
-    when: backup_enabled
-    tags:
-      - apps
-      - backup     

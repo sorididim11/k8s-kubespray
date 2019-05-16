@@ -14,4 +14,3 @@ mountOptions:
   - gid=1000
 parameters:
   skuName: Standard_LRS
-  location: westus

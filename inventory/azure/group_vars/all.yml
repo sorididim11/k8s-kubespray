@@ -71,6 +71,9 @@ bin_dir: /usr/local/bin
 ## like you would do when using nova-client before starting the playbook.
 cloud_provider: azure
 
+volume_provisioner_name: kuberntes.io/azure-file
+volume_storage_class_name: azure-k8s-sc
+
 azure_resource_group: "k8s"
 azure_subnet_name:  
   - "k8s-node-subnet"

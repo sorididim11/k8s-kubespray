@@ -200,7 +200,7 @@ insecure_dashboard: true
 
 # Monitoring apps for k8s
 efk_enabled: true
-efk_storage_class: "azure-k8s-sc" #"managed-nfs-storage"
+efk_storage_class: "{{ volume_storage_class_name }}"
 efk_namespace: "logging"
 efk_disk_size: "5Gi"
 
@@ -210,14 +210,14 @@ helm_enabled: true
 #  monitoring deployment depending on helm
 monitoring_enabled: true
 monitoring_namespace: "monitoring"
-monitoring_storage_class: "azure-k8s-sc"
+monitoring_storage_class: "{{ volume_storage_class_name }}"
 
 # Istio deployment
 istio_enabled: false
 
 # Registry deployment
 registry_enabled: true
-registry_storage_class: "azure-k8s-sc"
+registry_storage_class: "{{ volume_storage_class_name }}"
 registry_namespace: "kube-system"
 registry_disk_size: "5Gi"
 
