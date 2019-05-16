@@ -59,6 +59,13 @@ variable "master_vm_size" {
 # base image
 # to check all image supported on azure 
 # az vm image list --publisher RedHat --all
+  # {
+  #   "offer": "RHEL",
+  #   "publisher": "RedHat",
+  #   "sku": "8",
+  #   "urn": "RedHat:RHEL:8:8.0.2019050711",
+  #   "version": "8.0.2019050711"
+  # },
 variable "vm_image_publisher" {
   default = "RedHat"
 }
