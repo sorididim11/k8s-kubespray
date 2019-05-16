@@ -1,0 +1,49 @@
+# 1. create volume
+# az disk create \
+#   --resource-group k8s \
+#   --name k8s-static-vol  \
+#   --size-gb 1 \
+#   --query id --output tsv
+
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: azure-vol-svc
+spec:
+  selector:
+    app: azure-vol-deploy
+  type: LoadBalancer
+  ports:
+    - name: web
+      port: 31100
+      targetPort: 80
+
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: azure-vol-deploy
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: azure-vol
+  template:
+    metadata:
+      labels:
+        app: azure-vol 
+    spec:
+      containers:
+      - name: web
+        image: "nginx"
+        volumeMounts:
+        - name: web-conf
+          mountPath: /usr/local/spark/spark.conf
+      volumes:
+        - name: web-conf
+          azureDisk:
+            kind: Managed
+            diskName: k8s-static-vol
+            diskURI: "/subscriptions/69978730-9bb4-48d3-b7a6-dc6fabe747d4/resourceGroups/k8s/providers/Microsoft.Compute/disks/k8s-static-vol"
