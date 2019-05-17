@@ -70,7 +70,8 @@ bin_dir: /usr/local/bin
 ## When openstack is used make sure to source in the openstack credentials
 ## like you would do when using nova-client before starting the playbook.
 cloud_provider: azure
-
+# azure volume provisioning
+azure_provisioner_enabled: True
 volume_provisioner_name: kuberntes.io/azure-file
 volume_storage_class_name: azure-k8s-sc
 

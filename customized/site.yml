@@ -10,27 +10,10 @@
   gather_facts:  False
   roles:
   - { role: ../roles/kubernetes-apps/monitoring, when: helm_enabled and monitoring_enabled, tags: [apps, monitoring]}
-  - { role: ../roles/kubernetes-apps/backup, when: backup_enabled, tags: [apps, backup] }
 
 - hosts: kube-master[0]
   gather_facts:  False
   tasks:
-  - name: K8S storageClass | Create manifests for storageClass
-    template:
-      src: "templates/storageClass.yml.j2"
-      dest: "{{ kube_config_dir }}/addons/ingress_nginx/storageClass.yml"
-    tags:
-      - apps
-      - volume
-  - name:  K8S storageClass | Apply ingress for for storageClass
-    kube:
-      kubectl: "{{ bin_dir }}/kubectl"
-      filename: "{{ kube_config_dir }}/addons/ingress_nginx/storageClass.yml"
-      state: "latest"
-    tags:
-      - apps
-      - volume
-
   - name: NGINX Ingress Controller | Create manifests for monitoring, logging, dashboard and registry
     template:
       src: "templates/ingress.yml.j2"
@@ -48,7 +31,6 @@
       - expose
       - apps
 
-      
 - hosts: kube-master[0]
   gather_facts:  False
   roles:

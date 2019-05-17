@@ -20,3 +20,13 @@ dependencies:
       - apps
       - cephfs-provisioner
       - external-provisioner
+
+  - role: kubernetes-apps/external_provisioner/azure_provisioner
+    when: 
+      - cloud_provider is defined 
+      - cloud_provider == "azure" 
+      - azure_provisioner_enabled 
+    tags:
+      - apps
+      - azure-provisioner
+      - external-provisioner
