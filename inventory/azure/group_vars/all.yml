@@ -72,7 +72,7 @@ bin_dir: /usr/local/bin
 cloud_provider: azure
 # azure volume provisioning
 azure_provisioner_enabled: True
-volume_provisioner_name: kuberntes.io/azure-disk
+volume_provisioner_name: kubernetes.io/azure-disk
 volume_storage_class_name: azure-k8s-sc
 
 azure_resource_group: "k8s"
