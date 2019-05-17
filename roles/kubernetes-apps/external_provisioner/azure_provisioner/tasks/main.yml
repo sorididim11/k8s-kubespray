@@ -2,7 +2,7 @@
 
 - name: K8S storageClass | Create manifests for storageClass
   template:
-    src: "azure-provisioner-sc.yml.yml.j2"
+    src: "azure-provisioner-sc.yml.j2"
     dest: "{{ kube_config_dir }}/addons/ingress_nginx/azure-provisioner-sc.yml"
   tags:
     - apps
