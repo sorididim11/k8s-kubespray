@@ -1,4 +1,12 @@
 ---
+- name: Install azure specific package
+  package:
+    pkg: cifs-utils
+    state: present  
+  tags:
+  - apps
+  - volume
+
 
 - name: K8S storageClass | Create manifests for storageClass
   template:
