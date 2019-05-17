@@ -5,11 +5,6 @@ metadata:
 provisioner: {{ volume_provisioner_name }}
 reclaimPolicy: Retain
 {% if cloud_provider is defined and cloud_provider == "azure" %}
-mountOptions:
-  - dir_mode=0777
-  - file_mode=0777
-  - uid=1000
-  - gid=1000
 parameters:
-  skuName: Standard_LRS
+  kind: Managed
 {% endif %}
